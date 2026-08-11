@@ -1,0 +1,20 @@
+{
+  "name": "adhd-ops",
+  "version": "0.1.0",
+  "description": "ADHD executive-function support: a delta-first morning brief (One Big Thing, 3-strike rule, forced decisions), an end-of-day shutdown email (wins celebrated first, open loops parked with their next physical step, tomorrow's One Big Thing proposed while context is warm), the /gsd rescue command (one next action sized to the time actually left, with a once-a-day scheduled poke whose designed common outcome is silence), the /park capture command (one line in, one line back), weekly follow-up triage (task bodies are claims to re-verify, lanes grouped by action and ordered cheapest-first), and a monthly retro that reads the suite's telemetry and proposes exactly one tuning change. A template, not a turnkey: configure the workspace-config skill before anything runs.",
+  "author": {
+    "name": "Cam Soper"
+  },
+  "keywords": [
+    "adhd",
+    "executive-function",
+    "briefing",
+    "focus",
+    "gsd",
+    "shutdown",
+    "capture",
+    "triage",
+    "retro",
+    "productivity"
+  ]
+}
