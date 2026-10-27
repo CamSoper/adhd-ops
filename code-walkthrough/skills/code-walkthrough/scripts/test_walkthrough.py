@@ -46,6 +46,13 @@ FILES = {
         "}\n"
     ),
     "app/tests/core.test.mjs": "import { decide } from \"../lib/core.mjs\";\n",
+    "app/prompt.md": (
+        "# Prompt\n"
+        "\n"
+        "Answer briefly.\n"
+        "When the input is empty, reply with refuse and explain " + "why " * 20 + "in one line.\n"
+        "Never guess.\n"
+    ),
 }
 
 
@@ -235,6 +242,15 @@ class BuildTests(unittest.TestCase):
         r, _, _ = self.r.build(p)
         self.assertIn("has 9 steps", r.stderr)
 
+    def test_known_drift_and_self_review_reach_the_page(self):
+        r, out, data = self.r.build(plan(review="self-review", known_drift="The README still names `cli.mjs` only."))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        d = json.loads(Path(data).read_text())
+        self.assertEqual((d["review"], d["known_drift"]), ("self-review", "The README still names `cli.mjs` only."))
+        self.assertIn('D.review === "self-review"', Path(out).read_text())
+        r, _, _ = self.r.build(plan(review="peer"))
+        self.assertIn("review must be one of", r.stderr)
+
     def test_no_links_mode(self):
         r, _, data = self.r.build(plan(), extra=["--no-links"])
         self.assertEqual(r.returncode, 0, r.stderr)
@@ -294,6 +310,47 @@ class ReviewTests(unittest.TestCase):
         p["chapters"][0]["steps"][0]["text"] = ["It calls `decide(argv[2])` and logs `verdict ...`."]
         rep = self.review(p)
         self.assertFalse([f for f in rep["flags"] if f["id"] == "T5"], rep["flags"])
+
+
+    def test_spine_in_reader_text_is_a_must(self):
+        p = plan(summary=["Follows one spine: an empty input."], known_drift="Nothing drifted.")
+        p["chapters"][0]["steps"][0]["title"] = "The spine starts here"
+        p["chapters"][0]["wrap"]["check"]["a"] = "`refuse`, the Spine's first exit."
+        rep = self.review(p)
+        got = {f["where"] for f in rep["flags"] if f["id"] == "T4" and f["severity"] == "must"}
+        self.assertEqual(got, {"overview", "step 1.1", "chapter 1 wrap"})
+        p["chapters"][0]["steps"][2]["visual"]["caption"] = "Spinel is a mineral, not the word."
+        p["summary"] = ["Follows one scenario: an empty input."]
+        p["chapters"][0]["steps"][0]["title"] = "The entry point"
+        p["chapters"][0]["wrap"]["check"]["a"] = "`refuse`."
+        self.assertFalse([f for f in self.review(p)["flags"] if f["id"] == "T4"])
+
+    def test_check_names_must_be_taught_in_their_chapter(self):
+        p = plan()
+        ch1 = p["chapters"][0]
+        ch2 = {"title": "The CLI", "blurb": "How input arrives.",
+               "steps": [dict(ch1["steps"][0]), dict(ch1["steps"][0], title="Again"), dict(ch1["steps"][0], title="Thrice")],
+               "wrap": {"takeaways": ["The CLI only forwards."],
+                        "check": {"q": "What caps the input length?", "a": "`LIMIT`, via `decide`; never `madeUp`."}}}
+        p["chapters"].append(ch2)
+        rep = self.review(p)
+        t7 = [f for f in rep["flags"] if f["id"] == "T7" and f["severity"] == "must"]
+        self.assertEqual([f["where"] for f in t7], ["chapter 2 wrap"])
+        self.assertIn("LIMIT", t7[0]["message"])
+        self.assertNotIn("decide", t7[0]["message"])   # shown in chapter 2's code
+        self.assertNotIn("madeUp", t7[0]["message"])   # already a T5 invention, not double-flagged
+        self.assertTrue([f for f in rep["flags"] if f["id"] == "T5" and "madeUp" in f["message"]])
+
+    def test_wide_lines_in_prompt_files_are_a_should(self):
+        p = plan()
+        p["chapters"][0]["steps"][2] = {"title": "The prompt refuses empty input",
+                                        "text": ["The prompt mirrors the rule."], "file": "app/prompt.md",
+                                        "from": "Answer briefly.", "to": "Never guess.", "focus": ["Never guess."]}
+        rep = self.review(p)
+        a9 = [f for f in rep["flags"] if f["id"] == "A9"]
+        self.assertEqual([(f["severity"], f["where"]) for f in a9], [("should", "step 1.3")])
+        self.assertIn("1 shown line(s) over 110", a9[0]["message"])
+        self.assertFalse([f for f in self.review(plan())["flags"] if f["id"] == "A9"])
 
 
 if __name__ == "__main__":

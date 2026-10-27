@@ -18,6 +18,8 @@ of its lines; `walkthrough.py build` turns it into the page. A complete example:
 | `overview_visual` | | the big picture (`visuals.md`) |
 | `chapters` | yes | 1 or more chapters, below |
 | `artifact_url` | | where it's published, so a rebuild updates the same page |
+| `known_drift` | | one short paragraph, shown on the overview: where the code and its docs, comments or live config disagree. The only place for drift notes |
+| `review` | | `"independent"` (default) or `"self-review"` when no fresh reviewer could be spawned; the page footer says so |
 
 The plan never holds a local path: the repo is `--repo` on the command line.
 

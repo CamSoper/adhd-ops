@@ -28,7 +28,10 @@ Subcommands:
       flags keyed to references/review-rubric.md (A* = ADHD-friendliness, T* =
       teaching effectiveness). Includes the identifier check: every `backticked`
       token the narration or a visual uses must exist somewhere in scope at the
-      pinned commit, or it's flagged as a possible invention.
+      pinned commit, or it's flagged as a possible invention, and every one in a
+      chapter's check question or answer must appear in that chapter's own steps.
+      Also flags the author's word "spine" anywhere a reader sees it, and over-wide
+      lines shown from prompt or config files.
 
 Exit codes: 0 = ok (review: report written, flags or not), 1 = invalid plan or
 input (problems on stderr), 2 = usage.
@@ -61,6 +64,11 @@ LONG_SENTENCE = 28     # words (A8)
 TITLE_WORDS = 9        # (T2)
 CAPTION_WORDS = 25     # (T6)
 CHAPTER_MINUTES = 10   # (A3)
+WIDE_PROMPT_COLS = 110 # shown line width in a prompt or config file (A9)
+PROMPT_EXTS = {".md", ".txt", ".yaml", ".yml", ".json"}
+PROMPT_LANGS = {"markdown", "yaml", "plaintext", "text"}
+REVIEW_KINDS = ("independent", "self-review")
+SPINE_RX = re.compile(r"\bspines?\b", re.I)
 CODE_COLS_MIN, CODE_COLS_MAX = 60, 150
 
 LANGS = {".mjs": "javascript", ".cjs": "javascript", ".js": "javascript", ".jsx": "javascript",
@@ -541,6 +549,10 @@ def resolve_plan(plan, repo, no_links):
             errs.append(f"{sha[:7]} isn't on any remote branch; push it (or pin an upstream ref) or every link 404s")
     if "overview_visual" in plan:
         check_visual(plan["overview_visual"], "overview", False, errs)
+    if plan.get("review", "independent") not in REVIEW_KINDS:
+        errs.append(f"review must be one of {', '.join(REVIEW_KINDS)} (got {plan.get('review')!r})")
+    if "known_drift" in plan and not (isinstance(plan["known_drift"], str) and norm(plan["known_drift"])):
+        errs.append("known_drift must be one non-empty paragraph (a string)")
 
     cache, chapters = {}, []
     for ci, ch in enumerate(plan["chapters"], 1):
@@ -570,6 +582,8 @@ def resolve_plan(plan, repo, no_links):
         "goal": plan.get("goal", ""),
         "summary": plan["summary"],
         "glossary": plan.get("glossary", []),
+        "known_drift": plan.get("known_drift", ""),
+        "review": plan.get("review", "independent"),
         "overview_visual": plan.get("overview_visual"),
         "sha": sha,
         "committed": committed,
@@ -647,6 +661,29 @@ def missing_identifiers(strings, corpus):
     return missing
 
 
+def step_strings(s):
+    return s["text"] + [s["title"]] + visual_strings(s.get("visual")) + [c["note"] for c in s.get("callouts", [])]
+
+
+def reader_text(data):
+    """Every reader-facing string on the page, keyed by where it shows."""
+    out = [("overview", x) for x in [data["title"], data["audience"], data["goal"], data["known_drift"]]
+           + list(data["summary"]) + visual_strings(data.get("overview_visual"))
+           + [g.get(k, "") for g in data.get("glossary", []) for k in ("term", "means")]]
+    for ci, ch in enumerate(data["chapters"], 1):
+        wrap = ch.get("wrap") or {}
+        check = wrap.get("check") or {}
+        out += [(f"chapter {ci}", x) for x in [ch["title"], ch.get("blurb", "")]]
+        out += [(f"chapter {ci} wrap", x) for x in list(wrap.get("takeaways") or []) + [check.get("q", ""), check.get("a", "")]]
+        for si, s in enumerate(ch["steps"], 1):
+            out += [(f"step {ci}.{si}", x) for x in step_strings(s)]
+    return [(w, x) for w, x in out if isinstance(x, str) and x]
+
+
+def is_prompt_file(s):
+    return PurePosixPath(s["file"]).suffix.lower() in PROMPT_EXTS or s["lang"] in PROMPT_LANGS
+
+
 def cmd_review(a):
     plan = load_plan(a.plan)
     data, cache = resolve_plan(plan, a.repo, a.no_links)
@@ -690,6 +727,10 @@ def cmd_review(a):
         missing = missing_identifiers(tk + [check.get("q", ""), check.get("a", "")], corpus)
         if missing:
             flag("T5", "must", f"{cw} wrap", f"backticked names not found in scope at {data['sha'][:7]}: {', '.join(missing)}")
+        taught = "\n".join(x for s in ch["steps"] for x in step_strings(s) + list(s.get("lines", [])))
+        untaught = [t for t in missing_identifiers([check.get("q", ""), check.get("a", "")], taught) if t not in missing]
+        if untaught:
+            flag("T7", "must", f"{cw} wrap", f"check question or answer names what the chapter's steps never show: {', '.join(untaught)}")
         for si, s in enumerate(ch["steps"], 1):
             w = f"step {ci}.{si}"
             wc = sum(words(p) for p in s["text"])
@@ -730,20 +771,30 @@ def cmd_review(a):
                     flag("A4", "should", w, f"{len(s['lines'])}-line snippet (target ≤ {SOFT_SPAN})")
                 if s.get("visual") and wc > 60:
                     flag("A7", "should", w, "code, a visual and more than 60 words on one step; trim the words or move the visual")
+                if is_prompt_file(s):
+                    wide = sum(len(l.expandtabs(4)) > WIDE_PROMPT_COLS for l in s["lines"])
+                    if wide:
+                        flag("A9", "should", w, f"{wide} shown line(s) over {WIDE_PROMPT_COLS} columns in {s['file']}; excerpt the 2-5 lines the step is about")
             elif wc > 80:
                 flag("A7", "should", w, f"concept step with {wc} words; the picture should carry it")
             if s.get("visual"):
                 cap = s["visual"].get("caption", "")
                 if words(cap) > CAPTION_WORDS:
                     flag("T6", "should", w, f"visual caption is {words(cap)} words (target ≤ {CAPTION_WORDS})")
-            strings = s["text"] + [s["title"]] + visual_strings(s.get("visual")) + [c["note"] for c in s.get("callouts", [])]
+            strings = step_strings(s)
             missing = missing_identifiers(strings, corpus)
             if missing:
                 flag("T5", "must", w, f"backticked names not found in scope at {data['sha'][:7]}: {', '.join(missing)}")
     gl = [g.get("term", "") + " " + g.get("means", "") for g in data.get("glossary", [])]
-    missing = missing_identifiers(gl + visual_strings(data.get("overview_visual")), corpus)
+    missing = missing_identifiers(gl + visual_strings(data.get("overview_visual")) + [data["known_drift"]], corpus)
     if missing:
         flag("T5", "must", "overview", f"backticked names not found in scope at {data['sha'][:7]}: {', '.join(missing)}")
+    spine_at = []
+    for w, x in reader_text(data):
+        if SPINE_RX.search(x) and w not in spine_at:
+            spine_at.append(w)
+    for w in spine_at:
+        flag("T4", "must", w, "\"spine\" in reader-facing text; it's the author's word. Name the scenario in plain words")
     if total_steps > MAX_TOUR:
         flag("A3", "should", "tour", f"{total_steps} steps (target ≤ {MAX_TOUR}); cut or split into two tours")
     if visuals == 0:
