@@ -73,7 +73,7 @@ list, state store, and voice. Nothing personal is baked in; nothing runs until y
 
 ## Also in this repo: code-walkthrough
 
-`code-walkthrough` turns a repo, a directory, or a PR into a guided, paged walkthrough: story on the left, the exact code on the right, pinned to a commit with every line number linked to GitHub. It follows the same design rules as the rest of this repo: the point first, one idea per step, short chapters, and a checklist that shows progress. A script copies every snippet from git by its exact text, so the model can't invent code or line numbers.
+`code-walkthrough` turns a repo, a directory, or a PR into a guided, paged walkthrough: story on the left, the exact code on the right, pinned to a commit with every line number linked to GitHub. It follows the same design rules as the rest of this repo: the point first, one idea per step, short chapters, a track that always says where you are, and a checkpoint after every chapter that asks before it tells (predict what the code does, or tap the line that does it). A script copies every snippet from git by its exact text, so the model can't invent code, line numbers or answers.
 
 ```
 /plugin marketplace add CamSoper/adhd-ops
