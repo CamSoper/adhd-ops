@@ -1,10 +1,11 @@
 <title>__TOUR_TITLE__</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: a step-through. Story on the left, the thing to look at (code sized to its widest line, or a diagram) on the right; a To Do-style checklist tracks progress. */
+/* Layout: a step-through. Story on the left, the thing to look at (code sized to its widest line, or a diagram) on the right; when the code can't fit beside the story, everything stacks in reading order: words, code, picture, check, next. A segmented track up top says where you are and how far is left. */
 :root {
   --bg: #eef1f5;
   --surface: #ffffff;
@@ -14,14 +15,18 @@
   --accent: #1d5fc7;
   --accent-ink: #ffffff;
   --accent-soft: #e3ecfb;
-  --hand: #a65a06;
+  --hand: #93500a;
   --focus-bg: #fff2d6;
   --focus-edge: #e39a2d;
+  --ok: #18794a;
+  --ok-soft: #e1f3e8;
+  --no: #b3261e;
+  --no-soft: #fce9e7;
   --code-bg: #fbfcfd;
   --code-ink: #1d2733;
   --syn-kw: #b0306a;
   --syn-str: #187a4d;
-  --syn-com: #6a7787;
+  --syn-com: #5e6b7b;
   --syn-num: #985800;
   --syn-fn: #1d5fc7;
   --syn-attr: #0b6a86;
@@ -36,6 +41,7 @@
     --bg: #0d1218; --surface: #141b23; --ink: #e3e9f0; --muted: #94a2b2; --line: #26313d;
     --accent: #79aefc; --accent-ink: #0b1422; --accent-soft: #1a2a42; --hand: #f2a950;
     --focus-bg: #2f2514; --focus-edge: #e39a2d; --code-bg: #10161d; --code-ink: #dbe3ec;
+    --ok: #62d394; --ok-soft: #12301f; --no: #ff8f86; --no-soft: #3a1714;
     --syn-kw: #ff86bd; --syn-str: #74d49f; --syn-com: #7f8d9c; --syn-num: #f4b66b;
     --syn-fn: #8fbaff; --syn-attr: #6fd0ea; --syn-head: #f0f4f8;
     color-scheme: dark;
@@ -45,19 +51,20 @@
   --bg: #0d1218; --surface: #141b23; --ink: #e3e9f0; --muted: #94a2b2; --line: #26313d;
   --accent: #79aefc; --accent-ink: #0b1422; --accent-soft: #1a2a42; --hand: #f2a950;
   --focus-bg: #2f2514; --focus-edge: #e39a2d; --code-bg: #10161d; --code-ink: #dbe3ec;
+  --ok: #62d394; --ok-soft: #12301f; --no: #ff8f86; --no-soft: #3a1714;
   --syn-kw: #ff86bd; --syn-str: #74d49f; --syn-com: #7f8d9c; --syn-num: #f4b66b;
   --syn-fn: #8fbaff; --syn-attr: #6fd0ea; --syn-head: #f0f4f8;
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
-body { background: var(--bg); color: var(--ink); font: 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
+body { background: var(--bg); color: var(--ink); font: 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; margin: 0; }
 a { color: var(--accent); }
-a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
-code { font-family: var(--f-mono); font-size: 0.88em; background: var(--accent-soft); padding: 0.05em 0.35em; border-radius: 5px; overflow-wrap: anywhere; }
+a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--accent-soft); padding: 0.05em 0.35em; border-radius: 5px; overflow-wrap: break-word; }
 .page {
   max-width: 1760px; margin: 0 auto;
-  padding-block: 28px 56px;
+  padding-block: 24px 56px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -80,6 +87,8 @@ p { margin: 0; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .btn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .btn[disabled] { opacity: 0.4; cursor: default; }
+.btn.sm { padding: 8px 14px; font-size: 14px; }
+.linkbtn { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 .chip {
   display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
   font: 13.5px/1.3 var(--f-mono); color: var(--muted);
@@ -87,6 +96,9 @@ p { margin: 0; }
 }
 .chip a, .chip b { color: var(--ink); font-weight: 600; text-decoration: none; }
 .chip a:hover { color: var(--accent); }
+.pointer-only { display: none; }
+@media (hover: hover) and (pointer: fine) { .pointer-only { display: revert; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* To Do-style tick circles: empty = not opened yet, filled = opened, ring = you are here */
 .tick { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted); display: inline-grid; place-items: center; margin-top: 2px; }
@@ -94,9 +106,10 @@ p { margin: 0; }
 .is-seen .tick { background: var(--accent); border-color: var(--accent); }
 .is-seen .tick svg { visibility: visible; }
 .is-here .tick { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.cp-row .tick { border-radius: 5px; }
 
 /* ---------- overview ---------- */
-.ov { display: grid; gap: 36px; }
+.ov { display: grid; gap: 32px; }
 .ov-head { display: grid; gap: 16px; max-width: 72ch; }
 .ov-head .summary { display: grid; gap: 10px; font-size: 18px; }
 .goal { border-left: 4px solid var(--focus-edge); background: var(--surface); padding: 12px 16px; border-radius: 0 12px 12px 0; }
@@ -104,63 +117,201 @@ p { margin: 0; }
 .chapters { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
 .ch { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 14px; align-content: start; }
 .ch p.blurb { color: var(--muted); font-size: 15.5px; }
+.ch .showed { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; font-size: 15px; }
 .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.checklist li a { display: flex; gap: 12px; align-items: flex-start; padding: 8px; margin: 0 -8px; border-radius: 10px; color: var(--ink); text-decoration: none; font-size: 15.5px; line-height: 1.35; }
+.checklist li a { display: flex; gap: 12px; align-items: flex-start; padding: 7px 8px; margin: 0 -8px; border-radius: 10px; color: var(--ink); text-decoration: none; font-size: 15.5px; line-height: 1.35; }
 .checklist li a:hover { background: var(--accent-soft); }
-.checklist .where { display: block; font: 12.5px/1.4 var(--f-mono); color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
-.checklist .is-here a { background: var(--accent-soft); font-weight: 700; }
+.checklist .sub { display: block; font: 12.5px/1.4 var(--f-mono); color: var(--muted); margin-top: 2px; }
 .glossary { display: grid; gap: 10px 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin: 0; }
 .glossary div { display: grid; gap: 2px; }
 .glossary dt { font-weight: 700; }
 .glossary dd { margin: 0; color: var(--muted); font-size: 15.5px; }
 .how { color: var(--muted); font-size: 14.5px; max-width: 78ch; border-top: 1px solid var(--line); padding-top: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 14px; }
+details.card > summary { cursor: pointer; list-style: none; display: grid; gap: 6px; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary h3::after { content: " ▸"; color: var(--muted); font-size: 0.8em; }
+details.card[open] > summary h3::after { content: " ▾"; }
+.legend-line { color: var(--muted); font-size: 14.5px; }
+
+/* ---------- code map ---------- */
+.tree, .tree ul { list-style: none; margin: 0; padding: 0; }
+.tree ul { padding-left: 18px; margin-left: 6px; border-left: 1px solid var(--line); }
+.tree li { padding: 3px 0; min-width: 0; }
+.tree .row-f { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.tree .fn, .tree .dn { font: 14.5px/1.4 var(--f-mono); overflow-wrap: anywhere; }
+.tree .dn { color: var(--muted); }
+.tree .f.on .fn { font-weight: 600; }
+.tree .off .fn, .tree .off .dn, .tree .off .role, .tree .off .lc { color: var(--muted); }
+.tree .off .sz > span { background: var(--line); }
+.tree .note { display: block; width: 100%; color: var(--muted); font-size: 14px; line-height: 1.35; }
+.tree .role { font: 600 11px/1.6 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--hand); border: 1px solid currentColor; border-radius: 5px; padding: 0 5px; }
+.tree .sz { display: inline-block; width: 52px; height: 6px; border-radius: 3px; background: var(--line); vertical-align: middle; overflow: hidden; }
+.tree .sz > span { display: block; height: 100%; background: var(--muted); }
+.tree .lc { font: 12.5px/1 var(--f-mono); color: var(--muted); }
+.tree .cnt { font: 12.5px/1.4 var(--f-mono); color: var(--muted); margin-left: 8px; }
+.tree summary { cursor: pointer; }
+.tree .here > .row-f { background: var(--focus-bg); border-radius: 8px; margin: 0 -6px; padding: 2px 6px; }
+.tree .here .fn::before { content: "▶ "; color: var(--hand); }
+.pills { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.pill { font: 600 12.5px/1 var(--f-mono); color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 4px 8px; text-decoration: none; }
+.pill.is-seen { background: var(--accent); color: var(--accent-ink); }
 
 /* ---------- step view ---------- */
-.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 22px; }
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
 .topbar .spacer { flex: 1; }
-.progress { font: 13.5px/1 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
-.stepview { display: grid; gap: 28px; grid-template-columns: minmax(340px, 1fr) minmax(0, var(--codew, 62%)); align-items: start; }
-@media (max-width: 960px) { .stepview { grid-template-columns: minmax(0, 1fr); } }
-.story { display: grid; gap: 18px; min-width: 0; }
-/* Sticky only when it fits: a taller story would hide its own bottom until the code ran out. */
-@media (min-width: 961px) { .story.stick { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); } }
-.story .prose { display: grid; gap: 12px; font-size: 17.5px; max-width: 62ch; }
-.nav { display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
-.inchapter { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 8px; }
+.topbar .where-ch { min-width: 0; }
+.progress { font: 13.5px/1.3 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.track { display: flex; gap: 10px; margin: 14px 0 6px; }
+.grp { display: flex; gap: 3px; flex: var(--n) 1 0; min-width: 0; }
+.seg { flex: 1 1 0; min-width: 6px; height: 22px; position: relative; display: block; }
+.seg::after { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 6px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px var(--muted); }
+.seg.is-seen::after { background: var(--accent); box-shadow: none; }
+.seg.is-here::after { background: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); top: 6px; height: 10px; }
+.seg.cp { flex: 0 0 14px; }
+.seg.cp::after { left: 2px; right: auto; width: 10px; height: 10px; top: 6px; border-radius: 2px; transform: rotate(45deg); }
+.seg.cp.is-here::after { width: 12px; height: 12px; top: 5px; left: 1px; }
+.subbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 22px; }
+.subbar .keys { margin-left: auto; }
+.grp[data-go] { cursor: pointer; }
+.here-strip { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 13.5px; color: var(--muted); }
+.here-strip li.on { color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 2px 10px; font-weight: 700; }
+.here-strip li.on code { background: transparent; color: inherit; }
+.here-strip .sep { color: var(--muted); }
 .keys { font: 12.5px/1.4 var(--f-mono); color: var(--muted); }
 .keys kbd { font: inherit; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface); }
-details.terms summary { cursor: pointer; font-weight: 700; font-size: 15px; }
-details.terms .glossary { margin-top: 10px; grid-template-columns: 1fr; }
-.wrapup { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; gap: 10px; }
-.wrapup ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
-.wrapup details { border-top: 1px solid var(--line); padding-top: 10px; }
-.wrapup summary { cursor: pointer; font-weight: 700; }
-.wrapup details p { margin-top: 8px; }
+details.terms-menu { position: relative; }
+details.terms-menu > summary { list-style: none; cursor: pointer; }
+details.terms-menu > summary::-webkit-details-marker { display: none; }
+details.terms-menu .panel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: min(440px, calc(100vw - 32px)); max-height: 70vh; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); }
+details.terms-menu .glossary { grid-template-columns: 1fr; }
 
+.stepview { display: grid; gap: 28px; grid-template-columns: minmax(340px, 1fr) minmax(0, var(--codew, 62%)); align-items: start; }
+.story { display: grid; gap: 18px; min-width: 0; align-content: start; }
+.story.stick, .pane.stick { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); }
+.story .prose { display: grid; gap: 12px; font-size: 17.5px; max-width: 62ch; }
+.nav { display: flex; gap: 10px; min-width: 0; }
+.nav .btn.primary { flex: 0 1 auto; }
+/* Stacked: the story's children join the grid so the code comes right after the words, and Next comes last. */
+.stepview.stack { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.stepview.stack .story { display: contents; }
+.stepview.stack .lasttime { order: 1; }
+.stepview.stack .story > h2 { order: 2; }
+.stepview.stack .check.pre, .stepview.stack .check.predict { order: 3; }
+.stepview.stack .prose { order: 4; }
+.stepview.stack .pane { order: 5; }
+.stepview.stack .story > .viz { order: 6; }
+.stepview.stack .check:not(.pre):not(.predict) { order: 7; }
+.stepview.stack .nav { order: 8; }
+.after { margin-top: 18px; display: none; justify-content: flex-end; min-width: 0; }
+.after.show { display: flex; }
+
+.lasttime { border-left: 4px solid var(--accent); background: var(--surface); border-radius: 0 12px 12px 0; padding: 10px 14px; font-size: 15px; }
+.lasttime > summary { cursor: pointer; }
+.lasttime ul { margin: 4px 0 0; padding-left: 1.1em; display: grid; gap: 2px; color: var(--muted); }
+
+/* ---------- checks ---------- */
+.check { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; gap: 12px; min-width: 0; }
+.check.pre, .check.predict { border-style: dashed; padding: 12px 14px; gap: 8px; }
+.check.pre .q, .check.predict .q { font-size: 15.5px; }
+.check.pre .opt, .check.predict .opt { padding: 7px 10px; font-size: 14.5px; }
+.check.pre .row-actions, .check.predict .row-actions { font-size: 13.5px; }
+.check .q { font-weight: 700; font-size: 16.5px; }
+.check .eyebrow { color: var(--hand); }
+.opts { display: grid; gap: 8px; }
+.opt { text-align: left; font: 15.5px/1.4 var(--f-body); color: var(--ink); background: var(--code-bg); border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; min-width: 0; }
+button.opt { cursor: pointer; }
+button.opt:hover { border-color: var(--accent); }
+.opt.is-right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.is-wrong { border-color: var(--no); background: var(--no-soft); }
+.opt .mark { font-weight: 700; font-size: 13.5px; }
+.opt.is-right .mark { color: var(--ok); }
+.opt.is-wrong .mark { color: var(--no); }
+.opt .why { color: var(--muted); font-size: 14.5px; }
+.verdict { font-weight: 700; }
+.verdict.ok { color: var(--ok); }
+.verdict.no { color: var(--no); }
+.check .row-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 14.5px; }
+.muted { color: var(--muted); }
+
+/* ---------- checkpoint ---------- */
+.cp-view { display: grid; gap: 22px; max-width: 980px; }
+.cp-view > header { display: grid; gap: 8px; }
+.cp-view .lede { color: var(--muted); }
+.takeaways { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; gap: 10px; }
+.takeaways ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.upnext { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 16px; padding: 18px 20px; display: grid; gap: 10px; }
+.upnext .stop { color: var(--muted); font-size: 14.5px; }
+details.review { border: 1px dashed var(--line); border-radius: 14px; padding: 12px 16px; background: var(--surface); }
+details.review > summary { cursor: pointer; font-weight: 700; }
+details.review[open] > summary { margin-bottom: 12px; }
+
+/* ---------- code pane ---------- */
 .pane { background: var(--code-bg); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; min-width: 0; }
 .filebar { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
-.filebar .path { font: 13.5px/1.4 var(--f-mono); color: var(--muted); overflow-wrap: anywhere; min-width: 0; }
-.filebar .path b { color: var(--ink); font-weight: 600; }
-.filebar .range { color: var(--hand); font-weight: 600; font-variant-numeric: tabular-nums; }
+.crumb { font: 13.5px/1.4 var(--f-mono); color: var(--muted); background: none; border: 0; padding: 0; text-align: left; cursor: pointer; overflow-wrap: break-word; min-width: 0; max-width: 100%; }
+.crumb:hover .file { text-decoration: underline; }
+.crumb .file { color: var(--ink); font-weight: 600; }
+.crumb .sym { color: var(--ink); display: inline-block; max-width: min(42ch, 100%); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; margin-left: 0.5ch; }
+.crumb .sym::before { content: "› "; color: var(--muted); }
+.crumb .map { font: 600 11px/1.6 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; margin-left: 8px; vertical-align: 1px; }
+.filebar .range { color: var(--hand); font: 600 13.5px/1.4 var(--f-mono); font-variant-numeric: tabular-nums; margin-right: 12px; }
 .filebar a { font: 600 13.5px/1.4 var(--f-body); white-space: nowrap; }
 .code { padding: 10px 0; font: var(--code-size)/1.62 var(--f-mono); color: var(--code-ink); tab-size: 4; }
 .row { display: grid; grid-template-columns: 4.2em minmax(0, 1fr); border-left: 3px solid transparent; }
-.has-callouts .row { grid-template-columns: 4.2em 1.9em minmax(0, 1fr); }
+.has-gutter .row { grid-template-columns: 4.2em 1.9em minmax(0, 1fr); }
 .row .ln { text-align: right; padding-right: 14px; color: var(--muted); text-decoration: none; font-variant-numeric: tabular-nums; user-select: none; opacity: 0.75; }
 a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
-.row .src { white-space: pre-wrap; overflow-wrap: anywhere; padding-right: 16px; padding-left: 1.4em; text-indent: -1.4em; }
-.has-focus .row:not(.is-focus) .src { opacity: 0.58; }
-.has-focus .row:not(.is-focus):hover .src { opacity: 1; }
+/* Wrapped lines hang from the line's own indent, not from column 0. */
+.row .src { white-space: pre-wrap; overflow-wrap: anywhere; padding-right: 16px; padding-left: calc(var(--ind, 0) * 1ch + 1.4em); text-indent: calc(-1 * (var(--ind, 0) * 1ch + 1.4em)); }
 .row.is-focus { background: var(--focus-bg); border-left-color: var(--focus-edge); }
 .row.is-focus .ln { color: var(--hand); opacity: 1; font-weight: 600; }
+.row.is-linked { background: var(--accent-soft); border-left-color: var(--accent); }
+.row.is-answer { background: var(--ok-soft); border-left-color: var(--ok); }
+.row.is-miss { background: var(--no-soft); border-left-color: var(--no); }
+.code.hunt .row { cursor: pointer; }
+.code.hunt .row:hover { background: var(--accent-soft); border-left-color: var(--accent); }
+.code.hunt .row:focus-visible { background: var(--accent-soft); outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 0; }
 .badge { display: inline-grid; place-items: center; width: 1.45em; height: 1.45em; border-radius: 50%; background: var(--hand); color: var(--surface); font: 700 11.5px/1 var(--f-body); }
+.badge.letter { border-radius: 5px; }
 .row .co { display: flex; align-items: flex-start; padding-top: 0.12em; }
+.row .dot { width: 0.6em; height: 0.6em; margin: 0.45em 0 0 0.35em; border-radius: 50%; background: var(--accent); }
 .legend { list-style: none; margin: 0; padding: 12px 16px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: 15px; background: var(--surface); }
 .legend li { display: flex; gap: 10px; align-items: flex-start; }
 .legend .badge { margin-top: 2px; flex: none; }
-.codefoot { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--muted); }
-.after { margin-top: 18px; display: flex; justify-content: flex-end; min-width: 0; }
+.rownote { padding: 6px 16px 10px calc(4.2em + 3px); font: 14.5px/1.45 var(--f-body); white-space: normal; border-left: 3px solid var(--ok); background: var(--ok-soft); }
+.rownote.no { border-left-color: var(--no); background: var(--no-soft); }
+.huntbar { padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--accent-soft); display: grid; gap: 6px; font-size: 15.5px; }
+.huntbar .eyebrow { color: var(--hand); }
+.huntbar .q { font-weight: 700; }
 .pane.visual { background: var(--surface); padding: 20px; }
+/* Phones: code scrolls sideways with its line numbers pinned, instead of wrapping deep indents into a ribbon. */
+@media (max-width: 719px) {
+  .pane:not(.wrap) .code { overflow-x: auto; display: grid;
+    background: linear-gradient(to left, var(--code-bg) 40%, transparent) right / 32px 100% no-repeat local,
+                linear-gradient(to left, rgba(0, 0, 0, 0.16), transparent) right / 12px 100% no-repeat scroll, var(--code-bg); }
+  .pane:not(.wrap) .code .row { width: max-content; min-width: 100%; }
+  .pane:not(.wrap) .row .src { white-space: pre; padding-left: 0; text-indent: 0; }
+  .pane:not(.wrap) .row .ln { position: sticky; left: 0; z-index: 1; background: var(--code-bg); opacity: 1; }
+  .pane:not(.wrap) .row.is-focus .ln { background: var(--focus-bg); }
+  .pane:not(.wrap) .row.is-linked .ln { background: var(--accent-soft); }
+  .pane:not(.wrap) .row.is-answer .ln { background: var(--ok-soft); }
+  .pane:not(.wrap) .row.is-miss .ln { background: var(--no-soft); }
+  .pane:not(.wrap) .rownote { position: sticky; left: 0; width: calc(100vw - 34px); padding-left: 16px; }
+  .topbar .where-ch { order: 3; flex-basis: 100%; }
+  .here-strip { display: none; }
+  .seg { pointer-events: none; }
+}
+
+/* ---------- popovers ---------- */
+.pop { position: absolute; z-index: 40; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); padding: 14px 16px; width: max-content; max-width: min(420px, calc(100vw - 32px)); font-size: 15px; line-height: 1.45; }
+.pop.wide { width: min(620px, calc(100vw - 32px)); max-width: none; max-height: 65vh; overflow: auto; }
+.pop dt { font-weight: 700; }
+.pop dd { margin: 2px 0 0; color: var(--muted); }
+.peek { margin: 6px 0 0; font: 12.5px/1.5 var(--f-mono); color: var(--code-ink); background: var(--code-bg); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 8px; white-space: pre-wrap; overflow-wrap: anywhere; grid-column: 1 / -1; }
+.peek .ln { color: var(--hand); font-weight: 600; margin-right: 1ch; }
+.term { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: help; text-decoration: underline dotted var(--muted); text-underline-offset: 3px; }
+code .term, .term code { cursor: help; }
 
 /* ---------- visuals ---------- */
 .viz { container-type: inline-size; margin: 0; display: grid; gap: 14px; min-width: 0; }
@@ -178,26 +329,53 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
 .chain .link span { max-width: 22ch; }
 .exits { list-style: none; margin: 6px 0 0; padding: 6px 0 0; border-top: 1px dashed var(--line); display: grid; gap: 3px; font-size: 13.5px; color: var(--muted); }
 .loop { color: var(--muted); font-size: 14.5px; }
-@container (min-width: 640px) {
-  .chain { flex-direction: row; align-items: stretch; }
-  .chain .link { flex: 0 0 auto; max-width: 13ch; }
-  .chain .link::before { content: "→"; }
+/* Horizontal only when every node gets room: wider containers for more nodes. */
+@container (min-width: 520px) {
+  .chain[data-n="2"] { flex-direction: row; align-items: stretch; }
+  .chain[data-n="2"] > .node { min-width: 14ch; }
+  .chain[data-n="2"] .link { flex: 0 0 auto; max-width: 12ch; }
+  .chain[data-n="2"] .link::before { content: "→"; }
 }
+@container (min-width: 680px) {
+  .chain[data-n="2"], .chain[data-n="3"] { flex-direction: row; align-items: stretch; }
+  .chain[data-n="2"] > .node, .chain[data-n="3"] > .node { min-width: 14ch; }
+  .chain[data-n="2"] .link, .chain[data-n="3"] .link { flex: 0 0 auto; max-width: 12ch; }
+  .chain[data-n="2"] .link::before, .chain[data-n="3"] .link::before { content: "→"; }
+}
+@container (min-width: 860px) {
+  .chain[data-n="2"], .chain[data-n="3"], .chain[data-n="4"] { flex-direction: row; align-items: stretch; }
+  .chain[data-n="2"] > .node, .chain[data-n="3"] > .node, .chain[data-n="4"] > .node { min-width: 14ch; }
+  .chain[data-n="2"] .link, .chain[data-n="3"] .link, .chain[data-n="4"] .link { flex: 0 0 auto; max-width: 12ch; }
+  .chain[data-n="2"] .link::before, .chain[data-n="3"] .link::before, .chain[data-n="4"] .link::before { content: "→"; }
+}
+@container (min-width: 1040px) {
+  .chain[data-n="2"], .chain[data-n="3"], .chain[data-n="4"], .chain[data-n="5"], .chain[data-n="6"] { flex-direction: row; align-items: stretch; }
+  .chain[data-n="2"] > .node, .chain[data-n="3"] > .node, .chain[data-n="4"] > .node, .chain[data-n="5"] > .node, .chain[data-n="6"] > .node { min-width: 14ch; }
+  .chain[data-n="2"] .link, .chain[data-n="3"] .link, .chain[data-n="4"] .link, .chain[data-n="5"] .link, .chain[data-n="6"] .link { flex: 0 0 auto; max-width: 12ch; }
+  .chain[data-n="2"] .link::before, .chain[data-n="3"] .link::before, .chain[data-n="4"] .link::before, .chain[data-n="5"] .link::before, .chain[data-n="6"] .link::before { content: "→"; }
+}
+/* An item linked to a line of the code beside it: hover or tap to light that line. */
+.lk { cursor: pointer; }
+.lk:hover, .lk.is-linked { border-color: var(--accent) !important; box-shadow: 0 0 0 2px var(--accent-soft); }
+.lk:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lnchip { justify-self: start; font: 600 11.5px/1.5 var(--f-mono); color: var(--accent); background: var(--accent-soft); border-radius: 5px; padding: 0 5px; }
+tr.lk td:first-child { box-shadow: inset 3px 0 0 var(--accent-soft); }
 .ladder { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .ladder li { display: grid; grid-template-columns: 1.9em minmax(0, 1fr); gap: 4px 10px; align-items: start; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
 .ladder .then { grid-column: 2; color: var(--muted); font-size: 15px; }
 .ladder .then::before { content: "→ "; color: var(--hand); font-weight: 700; }
+.ladder .lnchip { grid-column: 2; }
 .ladder li.else { display: block; border-style: dashed; color: var(--muted); }
 @container (min-width: 560px) {
   .ladder li { grid-template-columns: 1.9em minmax(0, 1.2fr) minmax(0, 1fr); }
   .ladder .then { grid-column: 3; }
 }
 .tl { list-style: none; margin: 0; padding: 0 0 0 14px; display: grid; gap: 14px; border-left: 2px solid var(--line); }
-.tl li { position: relative; display: grid; gap: 2px; padding-left: 12px; min-width: 0; }
+.tl li { position: relative; display: grid; gap: 2px; align-content: start; padding-left: 12px; min-width: 0; border: 1px solid transparent; border-radius: 8px; }
 .tl li::before { content: ""; position: absolute; left: -22px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 3px solid var(--hand); }
 .tl .at { font: 600 12.5px/1.3 var(--f-mono); color: var(--hand); letter-spacing: 0.04em; text-transform: uppercase; }
 .tl b { font-size: 15.5px; }
-.tl li > span:last-child { color: var(--muted); font-size: 14.5px; }
+.tl li > span.sub { color: var(--muted); font-size: 14.5px; }
 @container (min-width: 560px) {
   .tl { display: flex; padding: 18px 0 0; border-left: 0; border-top: 2px solid var(--line); gap: 0; }
   .tl li { flex: var(--grow) 1 0; min-width: 120px; padding: 0 14px 0 0; }
@@ -210,17 +388,42 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
 .seq-actor { position: relative; text-align: center; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; margin: 0 6px 6px; font: 700 15px/1.25 var(--f-display); }
 .seq-msg { position: relative; margin-left: calc(50% / var(--k)); margin-right: calc(50% / var(--k)); text-align: center; }
 .seq-msg .lbl { display: inline-block; font-size: 14px; line-height: 1.3; background: var(--surface); padding: 0 6px; max-width: 100%; }
-.seq-msg .lbl i { font-style: normal; color: var(--hand); font-weight: 700; margin-right: 4px; }
+.seq-msg .lbl i, .seq-self i, .seq-list i { font-style: normal; color: var(--hand); font-weight: 700; margin-right: 4px; }
 .seq-msg .bar { display: block; height: 2px; background: var(--ink); position: relative; margin-top: 3px; }
 .seq-msg .bar::after { content: ""; position: absolute; top: -5px; border: 6px solid transparent; }
 .seq-msg[data-dir="r"] .bar::after { right: -2px; border-left-color: var(--ink); border-right: 0; }
 .seq-msg[data-dir="l"] .bar::after { left: -2px; border-right-color: var(--ink); border-left: 0; }
 .seq-self { position: relative; justify-self: center; text-align: center; font-size: 14px; line-height: 1.3; background: var(--surface); border: 1px dashed var(--muted); border-radius: 8px; padding: 4px 8px; margin: 0 6px; }
-.seq-self i { font-style: normal; color: var(--hand); font-weight: 700; margin-right: 4px; }
+.seq-list { display: grid; list-style: none; margin: 0; padding: 0; gap: 8px; }
+/* While the diagram fits, the list is for screen readers only; when it can't, the list replaces it. */
+.seq-wrap .seq-list { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.seq-list li { display: grid; grid-template-columns: 1.6em minmax(0, 1fr); gap: 6px; font-size: 15px; line-height: 1.4; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.seq-list .who { font-weight: 700; }
+/* The list replaces the diagram once its actors can't each get 128px. */
+@container (max-width: 296px) {
+  .seq-wrap[data-n="2"] .seq-scroll { display: none; }
+  .seq-wrap[data-n="2"] .seq-list { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+}
+@container (max-width: 424px) {
+  .seq-wrap[data-n="3"] .seq-scroll { display: none; }
+  .seq-wrap[data-n="3"] .seq-list { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+}
+@container (max-width: 552px) {
+  .seq-wrap[data-n="4"] .seq-scroll { display: none; }
+  .seq-wrap[data-n="4"] .seq-list { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+}
+@container (max-width: 680px) {
+  .seq-wrap[data-n="5"] .seq-scroll { display: none; }
+  .seq-wrap[data-n="5"] .seq-list { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+}
+.viz .later { visibility: hidden; }
+.viz .now .lbl, .viz .now.seq-self, .viz li.now { box-shadow: 0 0 0 2px var(--accent); border-radius: 6px; }
+.seq-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 14px; color: var(--muted); }
 .tbl { overflow-x: auto; }
 .tbl table { border-collapse: collapse; width: 100%; font-size: 15px; }
 .tbl th, .tbl td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 .tbl th { font: 600 12.5px/1.3 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tbl code { white-space: nowrap; }
 
 /* highlight.js tokens, on the theme's palette */
 .hljs-keyword, .hljs-selector-tag { color: var(--syn-kw); }
@@ -235,11 +438,12 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
 .hljs-link { color: var(--syn-fn); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .btn, .checklist li a { transition: background-color 120ms, border-color 120ms; }
+  .btn, .checklist li a, .opt, .row { transition: background-color 120ms, border-color 120ms; }
 }
 </style>
 
-<div class="page" id="app"></div>
+<main class="page" id="app"></main>
+<div id="live" class="sr-only" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="tour-data">/*__TOUR_DATA__*/</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -247,27 +451,47 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
 (function () {
   const D = JSON.parse(document.getElementById("tour-data").textContent);
   const app = document.getElementById("app");
+  const live = document.getElementById("live");
   const short = D.sha.slice(0, 7);
   const when = new Date(D.committed).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-  const scopeLabel = (D.scope || []).join(", ");
+  const scopes = (D.scope || []).filter((s) => s && s !== ".");   // "." is the whole repo or folder
+  const scopeLabel = scopes.length > 2 ? `${scopes.length} paths` : scopes.join(", ");   // a path tour names a dozen files: count them
   const TICK = '<span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 6.3l2.3 2.3 4.7-5" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
 
+  // The reading order: every chapter's steps, then its checkpoint.
   const FLAT = [];
-  D.chapters.forEach((ch, c) => ch.steps.forEach((st, s) => FLAT.push({ c, s, ch, st, id: `step-${c + 1}-${s + 1}` })));
-  const total = FLAT.length;
+  D.chapters.forEach((ch, c) => {
+    ch.steps.forEach((st, s) => FLAT.push({ type: "step", c, s, ch, st, id: `step-${c + 1}-${s + 1}` }));
+    FLAT.push({ type: "cp", c, ch, id: `check-${c + 1}` });
+  });
+  const STEPS = FLAT.filter((f) => f.type === "step");
+  const BY_SID = {};
+  STEPS.forEach((f) => { BY_SID[`${f.c + 1}.${f.s + 1}`] = f; });
+  const total = STEPS.length;
+  const narrow = () => window.innerWidth < 720;
 
-  // Opened steps are a per-viewer convenience: lose them and the page still works.
+  // Opened steps, answers and the last screen read are per-viewer conveniences: lose them and the page still works.
+  const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k) || "null") || fallback; } catch (e) { return fallback; } };
+  const keep = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const KEY = `walkthrough:seen:${D.sha}:${D.title}`;
-  let seen = new Set();
-  try { seen = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) {}
-  function markSeen(id) {
-    seen.add(id);
-    try { localStorage.setItem(KEY, JSON.stringify([...seen])); } catch (e) {}
-  }
+  const AKEY = `walkthrough:answers:${D.sha}:${D.title}`;
+  const LKEY = `walkthrough:last:${D.sha}:${D.title}`;
+  let seen = new Set(load(KEY, []));
+  const answers = load(AKEY, {});
+  let last = load(LKEY, null);
+  function markSeen(id) { if (!seen.has(id)) { seen.add(id); keep(KEY, [...seen]); } }
+  function setLast(id) { last = id; keep(LKEY, id); }
+  let resumeId = null, shownId = null, cameFrom = null;
+  const CHECKS = {}; // key -> check, filled as screens render, so a click can store what was picked
+  const reviewOpen = new Set();
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const inline = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  const plain = (s) => String(s ?? "").replace(/[`*]/g, "");
   const ext = (url, body, cls) => url ? `<a${cls ? ` class="${cls}"` : ""} href="${esc(url)}" target="_blank" rel="noopener">${body}</a>` : `<span${cls ? ` class="${cls}"` : ""}>${body}</span>`;
+  const wbr = (p) => esc(p).replace(/\//g, "/<wbr>");
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  const say = (msg) => { if (live) { live.textContent = ""; setTimeout(() => { live.textContent = msg; }, 30); } };
 
   function highlight(code, lang) {
     try {
@@ -290,6 +514,15 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
     out.push(cur + html.slice(last));
     return out;
   }
+  function indentOf(line) {
+    let n = 0;
+    for (const ch of line) {
+      if (ch === " ") n += 1;
+      else if (ch === "\t") n += 4 - (n % 4);
+      else break;
+    }
+    return Math.min(n, 40);
+  }
 
   // The code pane is as wide as the snippet's widest line (capped by the build), so
   // prose-like lines stop wrapping a word or two short. Measured, not guessed: the
@@ -311,14 +544,22 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
   }
 
   // ---------- visuals ----------
+  const LINKED = { flow: "nodes", states: "states", timeline: "points", ladder: "rungs", table: "rows" };
+  const lk = (x) => (x && x.ln ? ` data-ln="${x.ln}" tabindex="0" role="button" aria-expanded="false"` : "");
+  const lkc = (x) => (x && x.ln ? " lk" : "");
+  const lnChip = (x) => (x && x.ln ? `<span class="lnchip">L${x.ln}</span>` : "");
+  function linkedLines(v) {
+    const items = v && LINKED[v.kind] ? v[LINKED[v.kind]] || [] : [];
+    return new Set(items.filter((x) => x && !Array.isArray(x) && x.ln).map((x) => x.ln));
+  }
   function figure(v, body) {
     return `<figure class="viz viz-${esc(v.kind)}"><figcaption><span class="eyebrow">Look for</span>${inline(v.caption)}</figcaption>${body}</figure>`;
   }
   const VIS = {
     flow(v) {
       const parts = v.nodes.map((n, i) =>
-        `${i ? '<li class="link" aria-hidden="true"></li>' : ""}<li class="node"><b>${inline(n.label)}</b>${n.sub ? `<span>${inline(n.sub)}</span>` : ""}</li>`).join("");
-      return `<ol class="chain">${parts}</ol>${v.loop ? `<p class="loop">↺ ${inline(v.loop)}</p>` : ""}`;
+        `${i ? '<li class="link" aria-hidden="true"></li>' : ""}<li class="node${lkc(n)}"${lk(n)}><b>${inline(n.label)}</b>${n.sub ? `<span>${inline(n.sub)}</span>` : ""}${lnChip(n)}</li>`).join("");
+      return `<ol class="chain" data-n="${v.nodes.length}">${parts}</ol>${v.loop ? `<p class="loop">↺ ${inline(v.loop)}</p>` : ""}`;
     },
     states(v) {
       const exits = (label) => {
@@ -326,23 +567,27 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
         return xs.length ? `<ul class="exits">${xs.map((x) => `<li>↳ ${inline(x.label)} → <b>${inline(x.to)}</b></li>`).join("")}</ul>` : "";
       };
       const parts = v.states.map((s, i) =>
-        `${i ? `<li class="link"><span>${inline(v.edges[i - 1])}</span></li>` : ""}<li class="node"><b>${inline(s.label)}</b>${s.sub ? `<span>${inline(s.sub)}</span>` : ""}${exits(s.label)}</li>`).join("");
-      return `<ol class="chain">${parts}</ol>`;
+        `${i ? `<li class="link"><span>${inline(v.edges[i - 1])}</span></li>` : ""}<li class="node${lkc(s)}"${lk(s)}><b>${inline(s.label)}</b>${s.sub ? `<span>${inline(s.sub)}</span>` : ""}${lnChip(s)}${exits(s.label)}</li>`).join("");
+      return `<ol class="chain" data-n="${v.states.length}">${parts}</ol>`;
     },
     timeline(v) {
       const pts = v.points;
       const span = (pts[pts.length - 1].at - pts[0].at) || 1;
       return `<ol class="tl">${pts.map((p, i) => {
         const grow = i < pts.length - 1 ? Math.max(0.6, ((pts[i + 1].at - p.at) / span) * 10) : 0;
-        return `<li style="--grow:${grow.toFixed(2)}"><span class="at">${esc(v.unit)} ${esc(p.at)}</span><b>${inline(p.label)}</b>${p.sub ? `<span>${inline(p.sub)}</span>` : ""}</li>`;
+        return `<li class="${lkc(p).trim()}" style="--grow:${grow.toFixed(2)}"${lk(p)}><span class="at">${esc(v.unit)} ${esc(p.at)}</span><b>${inline(p.label)}</b>${p.sub ? `<span class="sub">${inline(p.sub)}</span>` : ""}${lnChip(p)}</li>`;
       }).join("")}</ol>`;
     },
     ladder(v) {
       return `<ol class="ladder">${v.rungs.map((r, i) =>
-        `<li><span class="badge">${i + 1}</span><span>${inline(r.test)}</span><span class="then">${inline(r.then)}</span></li>`).join("")}${v.otherwise ? `<li class="else">Otherwise → ${inline(v.otherwise)}</li>` : ""}</ol>`;
+        `<li class="${lkc(r).trim()}"${lk(r)}><span class="badge">${i + 1}</span><span>${inline(r.test)}</span><span class="then">${inline(r.then)}</span>${lnChip(r)}</li>`).join("")}${v.otherwise ? `<li class="else">Otherwise → ${inline(v.otherwise)}</li>` : ""}</ol>`;
     },
     table(v) {
-      return `<div class="tbl"><table><thead><tr>${v.columns.map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${v.rows.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      const rows = v.rows.map((r) => {
+        const cells = Array.isArray(r) ? r : r.cells, x = Array.isArray(r) ? null : r;
+        return `<tr class="${lkc(x).trim()}"${lk(x)}>${cells.map((c, i) => `<td>${inline(c)}${i === 0 && x && x.ln ? ` ${lnChip(x)}` : ""}</td>`).join("")}</tr>`;
+      }).join("");
+      return `<div class="tbl"><table><thead><tr>${v.columns.map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
     },
     sequence(v) {
       const n = v.actors.length, col = (a) => v.actors.indexOf(a);
@@ -351,51 +596,166 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
       v.messages.forEach((m, k) => {
         const a = col(m.from), b = col(m.to), row = k + 2, num = `<i>${k + 1}</i>`;
         if (a === b) {
-          html += `<div class="seq-self" style="grid-column:${a + 1};grid-row:${row}">${num}${inline(m.label)}</div>`;
+          html += `<div class="seq-self" data-m="${k}" style="grid-column:${a + 1};grid-row:${row}">${num}${inline(m.label)}</div>`;
         } else {
           const lo = Math.min(a, b), hi = Math.max(a, b);
-          html += `<div class="seq-msg" data-dir="${b > a ? "r" : "l"}" style="grid-column:${lo + 1} / ${hi + 2};grid-row:${row};--k:${hi - lo + 1}"><span class="lbl">${num}${inline(m.label)}</span><span class="bar"></span></div>`;
+          html += `<div class="seq-msg" data-m="${k}" data-dir="${b > a ? "r" : "l"}" style="grid-column:${lo + 1} / ${hi + 2};grid-row:${row};--k:${hi - lo + 1}"><span class="lbl">${num}${inline(m.label)}</span><span class="bar"></span></div>`;
         }
       });
-      return `<div class="seq-scroll"><div class="seq" style="--n:${n}" role="img" aria-label="${esc(v.caption)}">${html}</div></div>`;
+      // The list is the same messages in words: what a screen reader hears, and what a narrow screen shows.
+      const list = v.messages.map((m, k) =>
+        `<li data-m="${k}"><i>${k + 1}</i><span><span class="who">${inline(m.from)}</span> → ${m.from === m.to ? "itself" : `<span class="who">${inline(m.to)}</span>`}: ${inline(m.label)}</span></li>`).join("");
+      const ctl = v.messages.length >= 4 ? `<div class="seq-ctl" data-n="${v.messages.length}">${seqControls(0, v.messages.length)}</div>` : "";
+      return `<div class="seq-wrap" data-n="${n}"><div class="seq-scroll" aria-hidden="true"><div class="seq" style="--n:${n}">${html}</div></div><ol class="seq-list">${list}</ol></div>${ctl}`;
     },
   };
+  function seqControls(k, n) {
+    if (!k) return `<button class="btn sm" data-seq="start">Step through it, one message at a time</button>`;
+    return `<button class="btn sm" data-seq="prev" ${k <= 1 ? "disabled" : ""} aria-label="Previous message">←</button><span>Message ${k} of ${n}</span><button class="btn sm" data-seq="next" ${k >= n ? "disabled" : ""}>Next message →</button><button class="linkbtn" data-seq="all">Show all</button>`;
+  }
+  function seqStep(fig, act) {
+    const ctl = fig.querySelector(".seq-ctl"), n = +ctl.dataset.n;
+    const k0 = +fig.dataset.k || 0;
+    const k = { start: 1, next: Math.min(n, k0 + 1), prev: Math.max(1, k0 - 1), all: 0 }[act];
+    fig.dataset.k = k;
+    fig.querySelectorAll("[data-m]").forEach((el) => {
+      el.classList.toggle("later", k > 0 && +el.dataset.m >= k);
+      el.classList.toggle("now", k > 0 && +el.dataset.m === k - 1);
+    });
+    ctl.innerHTML = seqControls(k, n);
+    const again = ctl.querySelector(k ? '[data-seq="next"]:not([disabled]), [data-seq="all"]' : "[data-seq]");
+    if (again) again.focus();
+    const m = k && fig.querySelectorAll(".seq-list li")[k - 1];
+    say(k ? `Message ${k} of ${n}: ${m ? m.textContent.slice(String(k).length) : ""}` : "All messages shown");
+  }
   const visual = (v) => (v && VIS[v.kind] ? figure(v, VIS[v.kind](v)) : "");
 
+  // ---------- the code map ----------
+  const MAXL = (function () {
+    let m = 1;
+    (function walk(n) { (n.children || []).forEach((c) => (c.dir ? walk(c) : (m = Math.max(m, c.lines || 1)))); })(D.codemap ? D.codemap.tree : {});
+    return m;
+  })();
+  const ROLE = { entry: "where reading or running starts", hub: "many files point at it", test: "a test or fixture" };
+  function fileRow(f, here) {
+    const on = f.visits && f.visits.length;
+    const roles = (f.roles || []).slice(0, 1).map((r) => `<span class="role" title="${ROLE[r]}">${r}</span>`).join("");
+    const pct = f.lines ? Math.max(4, Math.round((Math.log(f.lines + 1) / Math.log(MAXL + 1)) * 100)) : 0;
+    const size = f.lines ? `<span class="sz" title="${f.lines} lines" aria-hidden="true"><span style="width:${pct}%"></span></span><span class="lc">${f.lines}<span class="sr-only"> lines</span></span>` : "";
+    const pills = on ? `<span class="pills">${f.visits.map((v) => { const t = BY_SID[v]; return `<a class="pill${t && seen.has(t.id) ? " is-seen" : ""}" href="#${t.id}" data-go="${t.id}" title="${esc(t.st.title)}"><span class="sr-only">Step </span>${esc(v)}</a>`; }).join("")}</span>` : "";
+    return `<li class="f ${on ? "on" : "off"}${f.path === here ? " here" : ""}"${f.path === here ? ' aria-current="location"' : ""}><div class="row-f"><span class="fn">${esc(f.name)}</span>${roles}${size}${pills}${f.note ? `<span class="note">${inline(f.note)}</span>` : ""}</div></li>`;
+  }
+  function dirRow(d, here) {
+    const label = `<span class="dn">${esc(d.name)}/</span>`;
+    const note = d.note ? `<span class="note">${inline(d.note)}</span>` : "";
+    if (d.visited) return `<li class="d"><div class="row-f">${label}${note}</div>${treeList(d, here)}</li>`;
+    const count = `<span class="cnt">${plural(d.files, "file")}, not on this tour</span>`;
+    if (!d.children) return `<li class="d off"><div class="row-f">${label}${count}${note}</div></li>`;
+    return `<li class="d off"><details><summary>${label}${count}${note}</summary>${treeList(d, here)}</details></li>`;   // a cut folder's note says why it's cut: never behind the fold
+  }
+  function treeList(d, here) {
+    const kids = d.children || [];
+    const dirs = kids.filter((c) => c.dir), on = kids.filter((c) => !c.dir && c.visits), off = kids.filter((c) => !c.dir && !c.visits);
+    let html = dirs.map((c) => dirRow(c, here)).join("") + on.map((c) => fileRow(c, here)).join("");
+    if (off.length > 4 && d.visited) html += `<li class="off"><details><summary class="dn">${plural(off.length, "more file")}, not on this tour</summary><ul>${off.map((c) => fileRow(c, here)).join("")}</ul></details></li>`;
+    else html += off.map((c) => fileRow(c, here)).join("");
+    return `<ul>${html}</ul>`;
+  }
+  function codeMap(here) {
+    const m = D.codemap;
+    const extra = [m.hidden ? `${plural(m.hidden, "file")} left off as noise` : "", m.truncated ? "only the first 600 files are drawn" : ""].filter(Boolean).join("; ");
+    return `<div class="tree"><div class="row-f"><span class="dn">${esc(m.root)}/</span>${extra ? `<span class="cnt">${esc(extra)}</span>` : ""}</div>${treeList(m.tree, here)}</div>`;
+  }
+
+  // ---------- answers ----------
+  // A choice is stored by its text, so a rebuild that reorders or rewrites choices can't misread an old answer.
+  function pickOf(chk, a) {
+    if (!a || (a.q !== undefined && a.q !== chk.q)) return undefined;
+    if (chk.kind === "choice") {
+      if (typeof a.pick !== "number") return a.pick;
+      const i = chk.choices.findIndex((x) => x.text === a.text);
+      return i >= 0 ? i : undefined;
+    }
+    if (chk.kind === "line") {
+      if (typeof a.pick !== "number") return a.pick;
+      const st = BY_SID[chk.step] && BY_SID[chk.step].st;
+      return st && a.pick >= st.start && a.pick <= st.end && st.lines[a.pick - st.start] === a.line ? a.pick : undefined;
+    }
+    return a.pick;
+  }
+  const answered = (chk, key) => pickOf(chk, answers[key]) !== undefined;
+  const isRight = (chk, key) => {
+    const p = pickOf(chk, answers[key]);
+    return chk.kind === "choice" ? typeof p === "number" && chk.choices[p].right : chk.kind === "line" ? p === chk.ln : false;
+  };
+  function answer(key, pick) {
+    const chk = CHECKS[key];
+    const st = chk && chk.kind === "line" && BY_SID[chk.step] && BY_SID[chk.step].st;
+    answers[key] = {
+      pick, q: chk ? chk.q : undefined,
+      text: chk && chk.kind === "choice" && typeof pick === "number" ? chk.choices[pick].text : undefined,
+      line: st && typeof pick === "number" ? st.lines[pick - st.start] : undefined,
+    };
+    keep(AKEY, answers);
+    render();
+    const box = app.querySelector(`[data-key="${key}"]`);
+    if (box) box.focus({ preventScroll: true });
+    if (chk && chk.kind !== "open" && !String(key).startsWith("p-")) {
+      say(pick === "unsure" || pick === "shown" ? "Answer shown." : isRight(chk, key) ? "Right." : "Not quite. The right answer is marked.");
+    } else if (String(key).startsWith("p-")) say("Guess noted.");
+  }
+
   // ---------- pieces ----------
-  function pathHtml(p) {
-    const i = p.lastIndexOf("/");
-    return `${esc(p.slice(0, i + 1))}<b>${esc(p.slice(i + 1))}</b>`;
-  }
-  function where(st) {
-    if (st.concept) return "the big picture";
-    const scope = (D.scope || []).length === 1 ? D.scope[0].replace(/\/?$/, "/") : "";
-    return `${esc(scope && st.file.startsWith(scope) ? st.file.slice(scope.length) : st.file)}:${st.start}–${st.end}`;
-  }
-  function checklist(ch, c, hereId) {
-    return `<ul class="checklist">${ch.steps.map((st, s) => {
+  function checklist(ch, c) {
+    const rows = ch.steps.map((st, s) => {
       const id = `step-${c + 1}-${s + 1}`;
-      const cls = [seen.has(id) ? "is-seen" : "", id === hereId ? "is-here" : ""].join(" ").trim();
-      return `<li class="${cls}"><a href="#${id}" data-go="${id}">${TICK}<span>${esc(st.title)}<span class="where">${where(st)}</span></span></a></li>`;
-    }).join("")}</ul>`;
+      return `<li class="${seen.has(id) ? "is-seen" : ""}"><a href="#${id}" data-go="${id}">${TICK}<span>${esc(st.title)}</span></a></li>`;
+    });
+    const cid = `check-${c + 1}`, n = ch.wrap.checks.length;
+    rows.push(`<li class="cp-row ${seen.has(cid) ? "is-seen" : ""}"><a href="#${cid}" data-go="${cid}">${TICK}<span>Checkpoint<span class="sub">${plural(n, "question")}, then the takeaways</span></span></a></li>`);
+    return `<ul class="checklist">${rows.join("")}</ul>`;
   }
-  function glossary(cls) {
+  function glossary() {
     if (!D.glossary || !D.glossary.length) return "";
-    return `<dl class="glossary ${cls || ""}">${D.glossary.map((g) => `<div><dt>${inline(g.term)}</dt><dd>${inline(g.means)}</dd></div>`).join("")}</dl>`;
+    return `<dl class="glossary">${D.glossary.map((g) => `<div><dt>${inline(g.term)}</dt><dd>${inline(g.means)}</dd></div>`).join("")}</dl>`;
+  }
+  const chapterFlat = (c) => FLAT.filter((f) => f.c === c);
+  const chapterDone = (c) => chapterFlat(c).every((f) => seen.has(f.id));
+  const where = (f) => f.type === "step" ? `${f.c + 1}.${f.s + 1}: ${f.st.title}` : `the chapter ${f.c + 1} checkpoint`;
+  function secsFrom(i) {
+    let secs = 0;
+    FLAT.slice(i).forEach((f) => { secs += f.type === "step" ? f.st.secs || 60 : 30 * f.ch.wrap.checks.length; });
+    return secs;
   }
 
   function renderOverview() {
     document.title = D.title;
-    const chapters = D.chapters.map((ch, c) => `
+    const chapters = D.chapters.map((ch, c) => {
+      const done = chapterDone(c) && ch.wrap.takeaways.length;
+      const flat = chapterFlat(c), next = flat.find((f) => !seen.has(f.id));
+      const btn = done ? ["Read it again", flat[0].id] : next && next !== flat[0] ? [`Continue chapter ${c + 1}`, next.id] : [`Start chapter ${c + 1}`, flat[0].id];
+      return `
       <section class="ch" aria-labelledby="ch${c}">
-        <div class="eyebrow">Chapter ${c + 1} · ${ch.steps.length} steps · about ${ch.minutes} min</div>
+        <div class="eyebrow">Chapter ${c + 1} · ${plural(ch.steps.length, "step")} · about ${ch.minutes} min</div>
         <h3 id="ch${c}">${esc(ch.title)}</h3>
-        <p class="blurb">${inline(ch.blurb)}</p>
-        ${checklist(ch, c, null)}
-        <div><a class="btn" href="#step-${c + 1}-1" data-go="step-${c + 1}-1">Start chapter ${c + 1}</a></div>
-      </section>`).join("");
-    const firstUnseen = FLAT.find((f) => !seen.has(f.id)) || FLAT[0];
+        ${done ? `<div><div class="eyebrow">What it showed</div><ul class="showed">${ch.wrap.takeaways.map((t) => `<li>${inline(t)}</li>`).join("")}</ul></div>` : `<p class="blurb">${inline(ch.blurb)}</p>`}
+        ${checklist(ch, c)}
+        <div><a class="btn" href="#${btn[1]}" data-go="${btn[1]}">${btn[0]}</a></div>
+      </section>`;
+    }).join("");
     const allSeen = FLAT.every((f) => seen.has(f.id));
+    const lastF = last && FLAT.find((f) => f.id === last);
+    const back = seen.size && !allSeen;
+    const target = back ? (lastF || FLAT.find((f) => !seen.has(f.id))) : FLAT[0];
+    const label = !seen.size ? "Start the walkthrough" : allSeen ? "Start again" : `Pick up at ${where(target)}`;
+    const startBtn = `<div class="nav"><a class="btn primary" href="#${target.id}" data-go="${target.id}" data-resume="${back ? 1 : 0}"><span>${esc(label)}</span> →</a></div>`;
+    const opened = STEPS.filter((f) => seen.has(f.id)).length;
+    const progress = back ? `<span class="chip"><b>${opened} of ${total} steps opened</b> · about ${Math.ceil(secsFrom(FLAT.indexOf(target)) / 60)} min left</span>` : "";
+    const map = D.codemap ? `
+        <details class="card" id="codemap"${window.innerWidth >= 720 ? " open" : ""}>
+          <summary><h3>Where the code lives</h3><span class="legend-line">${plural(D.codemap.visited, "file")} of ${D.codemap.files} are on this walkthrough, in bold. The numbered pills open the steps that show each one. <b>entry</b>: where reading or running starts. <b>hub</b>: many files point at it.</span></summary>
+          ${codeMap(null)}
+        </details>` : "";
     app.innerHTML = `
       <div class="ov">
         <header class="ov-head">
@@ -404,127 +764,528 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
           <div class="meta">
             ${D.audience ? `<span class="chip">For <b>${esc(D.audience)}</b></span>` : ""}
             <span class="chip"><b>${total} steps</b> · about ${D.minutes} min · ${D.chapters.length} chapters</span>
+            ${progress}
           </div>
+          ${back ? startBtn : ""}
           <div class="summary">${D.summary.map((p) => `<p>${inline(p)}</p>`).join("")}</div>
           ${D.goal ? `<p class="goal"><b>By the end</b> ${inline(D.goal)}</p>` : ""}
           <div class="meta">
             <span class="chip">Pinned to ${ext(D.commitUrl, short)} · ${esc(when)}</span>
-            ${D.treeUrl ? `<span class="chip">${ext(D.treeUrl, `Browse ${esc(scopeLabel || "the repo")} at this commit ↗`)}</span>` : ""}
+            ${D.treeUrl ? `<span class="chip">${ext(D.treeUrl, `Browse ${esc(scopes.length === 1 ? scopes[0] : "the repo")} at this commit ↗`)}</span>` : ""}
+            ${D.compareUrl ? `<span class="chip">${ext(D.compareUrl, "What's changed since ↗")}</span>` : ""}
           </div>
-          <div class="nav"><a class="btn primary" href="#${firstUnseen.id}" data-go="${firstUnseen.id}"><span>${allSeen ? "Start again" : seen.size ? "Pick up where you left off" : "Start the walkthrough"}</span> →</a></div>
+          ${back ? "" : startBtn}
         </header>
         ${visual(D.overview_visual)}
         <div class="chapters">${chapters}</div>
+        ${map}
         ${D.glossary && D.glossary.length ? `<section aria-labelledby="terms" style="display:grid;gap:14px"><h3 id="terms">Words this walkthrough uses</h3>${glossary()}</section>` : ""}
         ${D.known_drift ? `<section aria-labelledby="drift" style="display:grid;gap:8px"><h3 id="drift">Known drift</h3><p class="how">${inline(D.known_drift)}</p></section>` : ""}
-        <p class="how">Every snippet and line number here comes from git at ${short}, so the code is exactly what was in the repo at that commit${D.links ? ", and every line number opens that line on GitHub" : ""}. The narration and diagrams are an explanation of it, written for this walkthrough. Ticks mark the steps you've opened, in this browser only.${D.review === "self-review" ? " Review: self-review. Its author checked it; no independent reviewer did." : ""}</p>
+        <p class="how">Every snippet and line number here comes from git at ${short}, so the code is exactly what was in the repo at that commit${D.links ? ", and every line number opens that line on GitHub" : ""}. The narration, diagrams and questions are an explanation of it, written for this walkthrough. Ticks mark the steps you've opened and the checkpoints you've answered; your answers stay in this browser only.${D.review === "self-review" ? " Review: self-review. Its author checked it; no independent reviewer did." : ""}</p>
       </div>`;
   }
 
-  function codePane(st) {
+  // ---------- topbar: where you are, how far is left ----------
+  function track(curId) {
+    return `<nav class="track" aria-label="Progress through the walkthrough">${D.chapters.map((ch, c) => {
+      const flat = chapterFlat(c), next = flat.find((f) => !seen.has(f.id)) || flat[0];
+      return `<span class="grp" style="--n:${ch.steps.length}" data-go="${next.id}" title="Chapter ${c + 1}: ${esc(ch.title)}">${flat.map((f) => {
+        const label = f.type === "step" ? `${f.c + 1}.${f.s + 1} ${f.st.title}` : `Chapter ${c + 1} checkpoint`;
+        return `<a class="seg${f.type === "cp" ? " cp" : ""}${seen.has(f.id) ? " is-seen" : ""}${f.id === curId ? " is-here" : ""}" href="#${f.id}" data-go="${f.id}" tabindex="${f.id === curId ? 0 : -1}" title="${esc(label)}" aria-label="${esc(label)}${seen.has(f.id) ? " (opened)" : ""}"${f.id === curId ? ' aria-current="step"' : ""}></a>`;
+      }).join("")}</span>`;
+    }).join("")}</nav>`;
+  }
+  function hereStrip(ch) {
+    const ov = D.overview_visual;
+    if (!ch.at || !ov || !(ov.kind === "flow" || ov.kind === "states")) return "";
+    const items = (ov.kind === "flow" ? ov.nodes : ov.states).map((n) =>
+      `<li class="${n.label === ch.at ? "on" : ""}"${n.label === ch.at ? ' aria-current="location"' : ""}>${inline(n.label)}</li>`).join('<li class="sep" aria-hidden="true">→</li>');
+    return `<ol class="here-strip" aria-label="Where this chapter sits in the big picture">${items}</ol>`;
+  }
+  function topbar(f, i, progress) {
+    const terms = D.glossary && D.glossary.length
+      ? `<details class="terms-menu"><summary class="btn sm">Terms</summary><div class="panel">${glossary()}</div></details>` : "";
+    const left = Math.ceil(secsFrom(i + 1) / 60);
+    return `
+      <div class="topbar">
+        <a class="btn sm" href="#overview" data-go="overview">← Overview</a>
+        <span class="eyebrow where-ch">Chapter ${f.c + 1} · ${esc(f.ch.title)}</span>
+        <span class="spacer"></span>
+        ${terms}
+      </div>
+      ${track(f.id)}
+      <div class="subbar">
+        <span class="progress">${progress} · ${left > 0 ? `about ${left} min left` : "last one"}</span>
+        ${hereStrip(f.ch)}
+        <span class="keys pointer-only"><kbd>←</kbd> <kbd>→</kbd> to move · <kbd>Esc</kbd> for the overview</span>
+      </div>`;
+  }
+  function navButtons(i, prevOnly) {
+    const prev = FLAT[i - 1], next = FLAT[i + 1];
+    const label = (f) => f.type === "cp" ? `Checkpoint: chapter ${f.c + 1}` : f.s === 0 ? `Chapter ${f.c + 1}: ${f.ch.title}` : `Next: ${f.st.title}`;
+    const nextBtn = prevOnly ? "" : next
+      ? `<a class="btn primary" href="#${next.id}" data-go="${next.id}"><span>${esc(label(next))}</span> →</a>`
+      : `<a class="btn primary" href="#overview" data-go="overview"><span>Done. Back to the overview</span></a>`;
+    const prevBtn = prev ? `<a class="btn" href="#${prev.id}" data-go="${prev.id}" aria-label="Previous">←</a>` : `<button class="btn" disabled aria-label="Previous">←</button>`;
+    return `<div class="nav">${prevBtn}${nextBtn}</div>`;
+  }
+
+  // ---------- checks ----------
+  // Commit, then see. Nothing here ever blocks Next, and nothing is scored.
+  function choiceCard(chk, key, opt) {
+    CHECKS[key] = chk;
+    const p = pickOf(chk, answers[key]);
+    const kind = opt.guess ? "pre" : opt.predict ? "predict" : "";
+    let body;
+    if (p === undefined) {
+      const help = opt.guess ? `<span class="muted">A guess, not a test. The answer is at the end of this chapter.</span>`
+        : opt.predict ? `<span class="muted">A prediction. The step below explains it either way.</span>` : "";
+      body = `<div class="opts">${chk.choices.map((x, i) => `<button class="opt" data-ans="${key}" data-i="${i}"><span>${inline(x.text)}</span></button>`).join("")}</div>
+        <div class="row-actions"><button class="linkbtn" data-ans="${key}" data-i="unsure">${opt.guess ? "No idea yet" : "Not sure. Show me"}</button>${help}</div>`;
+    } else if (opt.guess) {
+      body = `<p>${typeof p === "number" ? `You guessed “${inline(chk.choices[p].text)}”.` : "No guess."} <span class="muted">The answer is at the end of this chapter.</span></p>`;
+    } else {
+      const right = typeof p === "number" && chk.choices[p].right;
+      const verdict = p === "unsure" ? `<p class="verdict">Here's the answer.</p>` : right ? `<p class="verdict ok">✓ Right.</p>` : `<p class="verdict no">✗ Not quite. The right answer is marked.</p>`;
+      const prior = opt.prior !== undefined && pickOf(chk, answers[opt.prior]);
+      const guessed = typeof prior === "number" ? `<p class="muted">At the start of the chapter you guessed “${inline(chk.choices[prior].text)}”.</p>` : "";
+      const opts = chk.choices.map((x, i) => {
+        const picked = p === i;
+        const cls = x.right ? "is-right" : picked ? "is-wrong" : "";
+        const mark = x.right ? "✓ Right answer" : picked ? "✗ Your pick" : "";
+        return `<div class="opt ${cls}"><span>${inline(x.text)}</span>${mark ? `<span class="mark">${mark}</span>` : ""}<span class="why">${inline(x.why)}</span></div>`;
+      }).join("");
+      const see = chk.see && BY_SID[chk.see] ? `<a href="#${BY_SID[chk.see].id}" data-go="${BY_SID[chk.see].id}">Revisit step ${esc(chk.see)}: ${esc(BY_SID[chk.see].st.title)} →</a>` : "";
+      body = `${verdict}${guessed}<div class="opts">${opts}</div>${see ? `<div class="row-actions">${see}</div>` : ""}`;
+    }
+    return `<section class="check${kind ? ` ${kind}` : ""}" data-key="${key}" tabindex="-1" aria-label="${esc(opt.eyebrow)}"><div class="eyebrow">${esc(opt.eyebrow)}</div><p class="q">${inline(chk.q)}</p>${body}</section>`;
+  }
+  function openCard(chk, key, eyebrow) {
+    CHECKS[key] = chk;
+    const body = answered(chk, key) ? `<p>${inline(chk.a)}</p>` : `<div class="row-actions"><button class="btn sm" data-ans="${key}" data-i="shown">I've thought about it. Show me</button></div>`;
+    return `<section class="check" data-key="${key}" tabindex="-1"><div class="eyebrow">${esc(eyebrow)}</div><p class="q">${inline(chk.q)}</p>${body}</section>`;
+  }
+  function huntBar(chk, key) {
+    const p = pickOf(chk, answers[key]);
+    if (p === undefined) return `<div class="huntbar"><div class="eyebrow">Find it</div><p class="q">${inline(chk.q)}</p><p class="muted">Tap the line in the code below${narrow() ? "" : ", or use ↑ ↓ and Enter"}. <button class="linkbtn" data-ans="${key}" data-i="shown">Show me</button></p></div>`;
+    const right = p === chk.ln;
+    const head = p === "shown" ? `It's line ${chk.ln}.` : right ? "✓ Right." : `✗ Not that one: it's line ${chk.ln}.`;
+    return `<div class="huntbar"><div class="eyebrow">Find it</div><p class="q">${inline(chk.q)}</p><p><b class="verdict ${p === "shown" ? "" : right ? "ok" : "no"}">${head}</b> ${inline(chk.why)}</p></div>`;
+  }
+  const isMiss = (chk, key) => answered(chk, key) && !isRight(chk, key);
+
+  // ---------- code ----------
+  function crumb(st) {
+    const root = D.codemap ? D.codemap.tree.path : "";
+    const rel = root && st.file.startsWith(root + "/") ? st.file.slice(root.length + 1) : st.file;
+    const i = rel.lastIndexOf("/");
+    const inner = `${wbr(rel.slice(0, i + 1))}<span class="file">${esc(rel.slice(i + 1))}</span>${st.symbol ? `<span class="sym" title="${esc(plain(st.symbol))}">${inline(st.symbol)}</span>` : ""}`;
+    return D.codemap
+      ? `<button class="crumb" data-map="${esc(st.file)}" aria-haspopup="dialog" aria-expanded="false" aria-label="${esc(st.file)}: show where this file sits in the code map">${inner}<span class="map" aria-hidden="true">map</span></button>`
+      : `<span class="crumb">${inner}</span>`;
+  }
+  function codePane(st, hunt) {
+    if (hunt) CHECKS[hunt.key] = hunt.chk;
+    const p = hunt ? pickOf(hunt.chk, answers[hunt.key]) : undefined;
+    const hunting = hunt && p === undefined;
     const lines = splitLines(highlight(st.lines.join("\n"), st.lang));
-    const focus = new Set(st.focus);
-    const marks = new Map((st.callouts || []).map((c, i) => [c.line, i + 1]));
+    const mini = hunt && hunt.mini;
+    const focus = new Set(hunt || mini ? [] : st.focus);
+    const marks = mini ? new Map() : new Map((st.callouts || []).map((c, i) => [c.line, String.fromCharCode(65 + i)]));
+    const linked = mini ? new Set() : linkedLines(st.visual);
+    const gutter = marks.size || linked.size;
     const rows = lines.map((h, k) => {
       const n = st.start + k;
-      const ln = st.fileUrl ? `<a class="ln" href="${esc(st.fileUrl)}#L${n}" target="_blank" rel="noopener" aria-label="Line ${n} on GitHub">${n}</a>` : `<span class="ln">${n}</span>`;
-      const co = marks.size ? `<span class="co">${marks.has(n) ? `<span class="badge" aria-label="Note ${marks.get(n)}">${marks.get(n)}</span>` : ""}</span>` : "";
-      return `<div class="row${focus.has(n) ? " is-focus" : ""}">${ln}${co}<span class="src">${h || " "}</span></div>`;
+      let cls = focus.has(n) ? " is-focus" : "";
+      if (hunt && !hunting) {
+        if (n === hunt.chk.ln) cls += " is-answer";
+        else if (p === n) cls += " is-miss";
+      }
+      const ln = st.fileUrl && !hunting ? `<a class="ln" href="${esc(st.fileUrl)}#L${n}" target="_blank" rel="noopener" aria-label="Line ${n} on GitHub">${n}</a>` : `<span class="ln">${n}</span>`;
+      const co = gutter ? `<span class="co">${marks.has(n) ? `<span class="badge letter" aria-label="Note ${marks.get(n)}">${marks.get(n)}</span>` : linked.has(n) ? '<span class="dot" title="A diagram item points here"></span>' : ""}</span>` : "";
+      const pick = hunting ? ` tabindex="${k === 0 ? 0 : -1}" role="button" data-pick="${hunt.key}" aria-label="Line ${n}: ${esc(st.lines[k].trim() || "blank")}"` : "";
+      let note = "";
+      if (hunt && !hunting && (n === p || (p === "shown" && n === hunt.chk.ln))) {
+        note = n === hunt.chk.ln
+          ? `<div class="rownote ok">${p === "shown" ? "This one." : "✓ Right."} ${inline(hunt.chk.why)}</div>`
+          : `<div class="rownote no">✗ Not this one. The answer is line ${hunt.chk.ln}, marked green. ${inline(hunt.chk.why)}</div>`;
+      }
+      return `<div class="row${cls}" data-n="${n}" style="--ind:${indentOf(st.lines[k])}"${pick}>${ln}${co}<span class="src">${h || " "}</span></div>${note}`;
     }).join("");
-    const legend = marks.size ? `<ol class="legend">${st.callouts.map((c, i) => `<li><span class="badge">${i + 1}</span><span>${inline(c.note)}</span></li>`).join("")}</ol>` : "";
+    const legend = marks.size ? `<ol class="legend">${st.callouts.map((c, i) => `<li><span class="badge letter">${String.fromCharCode(65 + i)}</span><span>${inline(c.note)}</span></li>`).join("")}</ol>` : "";
+    const wrap = st.lang === "markdown" || st.lang === "plaintext" ? " wrap" : "";
     return `
-      <section class="pane" aria-label="Code for this step">
+      <section class="pane${wrap}"${hunt ? ` data-key="${hunt.key}" tabindex="-1"` : ""} aria-label="Code for this step">
         <div class="filebar">
-          <span class="path">${pathHtml(st.file)} <span class="range">L${st.start}–${st.end}</span></span>
-          ${st.permalink ? `<a href="${esc(st.permalink)}" target="_blank" rel="noopener">View these lines on GitHub ↗</a>` : ""}
+          ${crumb(st)}
+          <span><span class="range">L${st.start}–${st.end}</span>${st.permalink ? `<a href="${esc(st.permalink)}" target="_blank" rel="noopener">GitHub ↗</a>` : ""}</span>
         </div>
-        <div class="code${focus.size ? " has-focus" : ""}${marks.size ? " has-callouts" : ""}">${rows}</div>
+        ${hunt ? huntBar(hunt.chk, hunt.key) : ""}
+        <div class="code${focus.size ? " has-focus" : ""}${gutter ? " has-gutter" : ""}${hunting ? " hunt" : ""}">${rows}</div>
         ${legend}
-        <div class="codefoot">Copied from git at ${ext(D.commitUrl, short)}. Highlighted lines carry the point of this step${st.fileUrl ? "; every line number opens that line on GitHub" : ""}.</div>
       </section>`;
   }
 
-  function wrapup(f) {
-    const w = f.ch.wrap || {};
-    if (f.s !== f.ch.steps.length - 1 || (!w.takeaways && !w.check)) return "";
-    return `
-      <section class="wrapup" aria-label="End of chapter ${f.c + 1}">
-        <div class="eyebrow">End of chapter ${f.c + 1}</div>
-        ${w.takeaways && w.takeaways.length ? `<ul>${w.takeaways.map((t) => `<li>${inline(t)}</li>`).join("")}</ul>` : ""}
-        ${w.check ? `<details><summary>Check yourself: ${inline(w.check.q)}</summary><p>${inline(w.check.a)}</p></details>` : ""}
-      </section>`;
+  // ---------- a step ----------
+  function lastTime(f) {
+    const open = narrow() ? "" : " open";
+    // Skipped when the reader just came from the checkpoint, which showed these a moment ago.
+    if (f.s === 0 && f.c > 0 && cameFrom !== `check-${f.c}`) {
+      const prev = D.chapters[f.c - 1];
+      if (!prev.wrap.takeaways.length) return "";
+      return `<details class="lasttime"${open}><summary><b>Last chapter showed</b></summary><ul>${prev.wrap.takeaways.map((t) => `<li>${inline(t)}</li>`).join("")}</ul></details>`;
+    }
+    if (f.id === resumeId && f.s > 0) {
+      return `<details class="lasttime"${open}><summary><b>So far in this chapter</b></summary><ul>${f.ch.steps.slice(0, f.s).map((st) => `<li>${esc(st.title)}</li>`).join("")}</ul></details>`;
+    }
+    return "";
   }
-
   function renderStep(i) {
     const f = FLAT[i], st = f.st;
     markSeen(f.id);
+    setLast(f.id);
     document.title = `${st.title} · ${D.title}`;
-    const prev = FLAT[i - 1], next = FLAT[i + 1];
-    const nextBtn = next
-      ? `<a class="btn primary" href="#${next.id}" data-go="${next.id}"><span>Next: ${esc(next.st.title)}</span> →</a>`
-      : `<a class="btn primary" href="#overview" data-go="overview"><span>Done. Back to the overview</span></a>`;
-    const prevBtn = prev ? `<a class="btn" href="#${prev.id}" data-go="${prev.id}" aria-label="Previous step">←</a>` : `<button class="btn" disabled aria-label="Previous step">←</button>`;
-    const right = st.concept ? `<section class="pane visual">${visual(st.visual)}</section>` : codePane(st);
-    const width = st.concept ? "min(880px, 64%)" : `${codeWidth(st)}px`;
+    const sid = `${f.c + 1}-${f.s + 1}`;
+    const w = f.ch.wrap;
+    const pre = f.s === 0 && w.pre && w.checks[0] ? choiceCard(w.checks[0], `p-${f.c + 1}`, { guess: true, eyebrow: "Guess first" }) : "";
+    const chk = st.check;
+    // A step's choice check is a prediction: asked before the narration that answers it.
+    const predict = chk && chk.kind === "choice" ? choiceCard(chk, `s-${sid}`, { predict: true, eyebrow: "Predict first" }) : "";
+    const hunt = chk && chk.kind === "line" ? { chk, key: `s-${sid}` } : null;
+    const holdBack = chk && chk.kind === "choice" && !answered(chk, `s-${sid}`);
+    const right = st.concept ? `<section class="pane visual">${visual(st.visual)}</section>` : codePane(holdBack ? { ...st, focus: [] } : st, hunt);
     app.innerHTML = `
-      <div class="topbar">
-        <a class="btn" href="#overview" data-go="overview">← Overview</a>
-        <span class="eyebrow">Chapter ${f.c + 1} · ${esc(f.ch.title)}</span>
-        <span class="spacer"></span>
-        <span class="progress">Step ${f.s + 1} of ${f.ch.steps.length} · ${i + 1}/${total} overall</span>
-      </div>
-      <div class="stepview" style="--codew:${width}">
+      ${topbar(f, i, `Step ${f.s + 1} of ${f.ch.steps.length}`)}
+      <div class="stepview">
         <article class="story">
-          <h2>${esc(st.title)}</h2>
+          ${lastTime(f)}
+          <h2 tabindex="-1">${esc(st.title)}</h2>
+          ${pre}
+          ${predict}
           <div class="prose">${st.text.map((p) => `<p>${inline(p)}</p>`).join("")}</div>
           ${st.concept ? "" : visual(st.visual)}
-          ${wrapup(f)}
-          <div class="nav">${prevBtn}${nextBtn}</div>
-          <div class="inchapter">
-            <div class="eyebrow">In this chapter</div>
-            ${checklist(f.ch, f.c, f.id)}
-            ${D.glossary && D.glossary.length ? `<details class="terms"><summary>Terms</summary>${glossary()}</details>` : ""}
-            <div class="keys"><kbd>←</kbd> <kbd>→</kbd> to move · <kbd>Esc</kbd> for the overview</div>
-          </div>
+          ${navButtons(i)}
         </article>
         ${right}
       </div>
-      <div class="after">${nextBtn}</div>`;
-    const story = app.querySelector(".story");
-    if (story && story.offsetHeight < window.innerHeight - 40) story.classList.add("stick");
+      <div class="after">${navButtons(i)}</div>`;
+    decorateTerms(app.querySelector(".prose"));
+    layout();
   }
 
+  // ---------- a checkpoint ----------
+  // Spaced retrieval: a choice question from at least two chapters back that was missed or skipped,
+  // until it's answered right in a review. Skipped when the checkpoint already asks two questions.
+  function reviewItem(c) {
+    if (c < 2 || D.chapters[c].wrap.checks.length >= 2) return null;
+    const pool = [];
+    for (let p = 0; p <= c - 2; p++) {
+      D.chapters[p].wrap.checks.forEach((chk, k) => chk.kind === "choice" && pool.push({ chk, key: `w-${p + 1}-${k + 1}`, p }));
+      D.chapters[p].steps.forEach((st, s) => st.check && st.check.kind === "choice" && pool.push({ chk: st.check, key: `s-${p + 1}-${s + 1}`, p }));
+    }
+    const here = pool.find((x) => answers[`rv-${c + 1}-${x.key}`]);
+    if (here) return here;
+    const retired = (x) => Object.keys(answers).some((k) => k.startsWith("rv-") && k.endsWith(`-${x.key}`) && isRight(x.chk, k));
+    const open = pool.filter((x) => !retired(x) && (!answered(x.chk, x.key) || isMiss(x.chk, x.key)));
+    return open.find((x) => answered(x.chk, x.key)) || open[0] || null;
+  }
+  function renderCheckpoint(i) {
+    const f = FLAT[i], ch = f.ch, c = f.c, w = ch.wrap;
+    setLast(f.id);
+    document.title = `Checkpoint ${c + 1} · ${D.title}`;
+    const cards = w.checks.map((chk, k) => {
+      const key = `w-${c + 1}-${k + 1}`, eyebrow = w.checks.length > 1 ? `Question ${k + 1} of ${w.checks.length}` : "Question";
+      if (chk.kind === "choice") return choiceCard(chk, key, { eyebrow, prior: k === 0 && w.pre ? `p-${c + 1}` : undefined });
+      if (chk.kind === "line") return lineCard(chk, key, eyebrow);
+      return openCard(chk, key, eyebrow);
+    }).join("");
+    const item = reviewItem(c);
+    let review = "";
+    if (item) {
+      const key = `rv-${c + 1}-${item.key}`;
+      review = `<details class="review" data-review="${c}"${answers[key] || reviewOpen.has(c) ? " open" : ""}><summary>One from chapter ${item.p + 1}, to keep it fresh <span class="muted">(optional)</span></summary>${choiceCard(item.chk, key, { eyebrow: `From chapter ${item.p + 1}` })}</details>`;
+    }
+    const answeredAll = w.checks.every((chk, k) => answered(chk, `w-${c + 1}-${k + 1}`));
+    const done = answeredAll || answers[`t-${c + 1}`];
+    if (answeredAll) markSeen(f.id);
+    const takeaways = w.takeaways.length ? `
+      <section class="takeaways" aria-label="What this chapter showed">
+        <div class="eyebrow">What chapter ${c + 1} showed</div>
+        ${done ? `<ul>${w.takeaways.map((t) => `<li>${inline(t)}</li>`).join("")}</ul>` : `<p class="muted">These open once you've answered, so the question asks first. <button class="linkbtn" data-ans="t-${c + 1}" data-i="shown">Show them now</button></p>`}
+      </section>` : "";
+    const next = D.chapters[c + 1];
+    const upnext = next ? `
+      <section class="upnext">
+        <div class="eyebrow">Up next · chapter ${c + 2} · ${plural(next.steps.length, "step")} · about ${next.minutes} min</div>
+        <h3>${esc(next.title)}</h3>
+        <p>${inline(next.blurb)}</p>
+        <div><a class="btn primary" href="#step-${c + 2}-1" data-go="step-${c + 2}-1"><span>Start chapter ${c + 2}</span> →</a></div>
+        <p class="stop">A good place to stop, too. Your place is saved in this browser.</p>
+      </section>` : `
+      <section class="upnext">
+        <div class="eyebrow">That's the walkthrough</div>
+        <p>${D.goal ? `By now ${inline(D.goal)}` : "You've seen every chapter."}</p>
+        <div><a class="btn primary" href="#overview" data-go="overview"><span>Back to the overview</span></a></div>
+      </section>`;
+    app.innerHTML = `
+      ${topbar(f, i, "Checkpoint")}
+      <div class="cp-view">
+        <header>
+          <div class="eyebrow">End of chapter ${c + 1}</div>
+          <h2 tabindex="-1">Checkpoint: ${esc(ch.title)}</h2>
+          ${c === 0 ? '<p class="lede">Answer from memory first. Nothing here is scored, and nothing blocks the way on.</p>' : ""}
+        </header>
+        ${cards}
+        ${takeaways}
+        ${review}
+        ${upnext}
+        ${navButtons(i, true)}
+      </div>`;
+  }
+  function lineCard(chk, key, eyebrow) {
+    const target = BY_SID[chk.step];
+    return `<section class="check" aria-label="${esc(eyebrow)}"><div class="eyebrow">${esc(eyebrow)}</div>${codePane(target.st, { chk, key, mini: true })}<p class="muted">From step ${esc(chk.step)}: ${esc(target.st.title)}</p></section>`;
+  }
+
+  // ---------- inline glossary ----------
+  function decorateTerms(root) {
+    if (!root || !D.glossary || !D.glossary.length) return;
+    const terms = D.glossary.map((g, i) => {
+      const raw = String(g.term).replace(/`/g, "").trim();
+      const core = raw.replace(/^[^\p{L}\p{N}]+/u, "").trim();
+      return { i, key: (core.length >= 2 ? core : raw).toLowerCase() };
+    }).filter((t) => t.key.length >= 2).sort((a, b) => b.key.length - a.key.length);
+    const isWord = (ch) => !!ch && /[\p{L}\p{N}_]/u.test(ch);
+    let used = 0;
+    for (const t of terms) {
+      if (used >= 3) break;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let node, done = false;
+      while (!done && (node = walker.nextNode())) {
+        if (node.parentElement.closest(".term")) continue;
+        const text = node.nodeValue, low = text.toLowerCase();
+        let at = low.indexOf(t.key);
+        while (at >= 0 && (isWord(text[at - 1]) || isWord(text[at + t.key.length]))) at = low.indexOf(t.key, at + 1);
+        if (at < 0) continue;
+        const code = node.parentElement.closest("code");
+        const btn = document.createElement("button");
+        btn.className = "term";
+        btn.dataset.t = t.i;
+        btn.setAttribute("aria-haspopup", "dialog");
+        btn.setAttribute("aria-expanded", "false");
+        if (code && code.textContent.trim().toLowerCase() === t.key) {
+          code.replaceWith(btn);
+          btn.appendChild(code);
+        } else {
+          const mid = node.splitText(at);
+          mid.splitText(t.key.length);
+          mid.replaceWith(btn);
+          btn.appendChild(mid);
+        }
+        done = true;
+        used++;
+      }
+    }
+  }
+
+  // ---------- popovers ----------
+  let pop = null, popAnchor = null;
+  function closePop(refocus) {
+    if (!pop) return;
+    const el = pop, a = popAnchor;
+    pop = popAnchor = null;
+    el.remove();
+    if (a) {
+      a.setAttribute("aria-expanded", "false");
+      if (refocus && a.isConnected) a.focus();
+    }
+  }
+  function openPop(anchor, html, wide, label) {
+    closePop(false);
+    pop = document.createElement("div");
+    pop.className = `pop${wide ? " wide" : ""}`;
+    pop.setAttribute("role", "dialog");
+    pop.setAttribute("aria-label", label);
+    pop.tabIndex = -1;
+    pop.innerHTML = html;
+    document.body.appendChild(pop);
+    const r = anchor.getBoundingClientRect();
+    const left = Math.max(16, Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 16));
+    pop.style.left = `${left}px`;
+    pop.style.top = `${r.bottom + window.scrollY + 8}px`;
+    pop.dataset.for = anchor.dataset.t || anchor.dataset.map || "";
+    popAnchor = anchor;
+    anchor.setAttribute("aria-expanded", "true");
+    const box = pop.getBoundingClientRect();
+    if (box.bottom > window.innerHeight) pop.scrollIntoView({ block: "nearest" });
+    pop.addEventListener("focusout", (e) => { if (pop && !pop.contains(e.relatedTarget) && e.relatedTarget !== popAnchor) closePop(false); });
+    pop.focus({ preventScroll: true });
+  }
+
+  // ---------- linked lines ----------
+  // Hover or focus an item to light its line; tap or Enter to pin it and peek at the line in place,
+  // so a phone never scrolls away from the diagram.
+  const pinned = new Set();
+  function setLinked(n, on) {
+    if (!on && pinned.has(+n)) return;
+    app.querySelectorAll(`.row[data-n="${n}"], [data-ln="${n}"]`).forEach((el) => el.classList.toggle("is-linked", on));
+  }
+  function peekToggle(item) {
+    const n = +item.dataset.ln, f = FLAT[current()];
+    if (!f || f.type !== "step" || f.st.concept) return;
+    const host = item.tagName === "TR" ? item.querySelector("td") : item;
+    const open = host.querySelector(".peek");
+    if (open) { open.remove(); pinned.delete(n); setLinked(n, false); item.setAttribute("aria-expanded", "false"); return; }
+    const text = f.st.lines[n - f.st.start].trim();
+    host.insertAdjacentHTML("beforeend", `<pre class="peek"><span class="ln">${n}</span>${esc(text)}</pre>`);
+    pinned.add(n);
+    setLinked(n, true);
+    item.setAttribute("aria-expanded", "true");
+    say(`Line ${n}: ${text}`);
+  }
+
+  // ---------- layout ----------
+  // Side by side only when the code gets at least 3/4 of its natural width beside the story.
+  function layout() {
+    const sv = app.querySelector(".stepview");
+    if (!sv) return;
+    const f = FLAT[current()];
+    const cs = getComputedStyle(app);
+    const avail = app.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const need = f.st.concept ? 880 * 0.75 : codeWidth(f.st) * 0.75;
+    const stack = avail < 900 || avail - 340 - 28 < need;
+    sv.classList.toggle("stack", stack);
+    const paneEl = sv.querySelector(":scope > .pane, .story > .pane"), prose = sv.querySelector(".prose");
+    if (paneEl && prose) {
+      if (stack && paneEl.parentElement !== prose.parentElement) prose.after(paneEl);
+      if (!stack && paneEl.parentElement !== sv) sv.appendChild(paneEl);
+    }
+    sv.style.setProperty("--codew", f.st.concept ? "min(880px, 64%)" : `${codeWidth(f.st)}px`);
+    const story = sv.querySelector(".story"), pane = sv.querySelector(".pane");
+    const fits = (el) => el && el.offsetHeight < window.innerHeight - 40;
+    story.classList.toggle("stick", !stack && fits(story));
+    if (pane) pane.classList.toggle("stick", !stack && fits(pane) && story.offsetHeight > pane.offsetHeight);
+    const after = app.querySelector(".after");
+    if (after) after.classList.toggle("show", !stack && !story.classList.contains("stick") && pane && pane.offsetHeight > story.offsetHeight + 160);
+  }
+
+  // ---------- routing ----------
   function current() {
     const h = location.hash.slice(1);
     return FLAT.findIndex((f) => f.id === h);
   }
   function render() {
+    closePop(false);
+    pinned.clear();
     const i = current();
-    if (i >= 0) renderStep(i); else renderOverview();
+    const id = i < 0 ? "overview" : FLAT[i].id;
+    if (id !== shownId) { cameFrom = shownId; shownId = id; }
+    if (i < 0) renderOverview();
+    else if (FLAT[i].type === "cp") renderCheckpoint(i);
+    else renderStep(i);
   }
-  function go(id) {
+  function go(id, resume) {
+    resumeId = resume ? id : null;
     try { location.hash = id; } catch (e) {}
     render(); // don't depend on hashchange firing inside the viewer's frame
     window.scrollTo({ top: 0 });
+    const h = id === "overview" ? app.querySelector(".ov-head .btn.primary") : app.querySelector("h2");
+    if (h) h.focus({ preventScroll: true });
+    const f = FLAT.find((x) => x.id === id);
+    say(f ? (f.type === "step" ? `Step ${f.c + 1}.${f.s + 1}: ${f.st.title}` : `Chapter ${f.c + 1} checkpoint`) : "Overview");
   }
 
-  app.addEventListener("click", (e) => {
-    const a = e.target.closest("[data-go]");
-    if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
-    e.preventDefault();
-    go(a.dataset.go);
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (pop && !pop.contains(t) && !t.closest(".term, .crumb")) closePop(false);
+    const go_ = t.closest("[data-go]");
+    if (go_ && !(e.metaKey || e.ctrlKey || e.shiftKey)) {
+      e.preventDefault();
+      go(go_.dataset.go, go_.dataset.resume === "1");
+      return;
+    }
+    const ans = t.closest("[data-ans]");
+    if (ans) {
+      const i = ans.dataset.i;
+      answer(ans.dataset.ans, /^\d+$/.test(i) ? +i : i);
+      return;
+    }
+    const row = t.closest("[data-pick]");
+    if (row && !t.closest("a")) { answer(row.dataset.pick, +row.dataset.n); return; }
+    const seq = t.closest("[data-seq]");
+    if (seq) { seqStep(seq.closest("figure"), seq.dataset.seq); return; }
+    const term = t.closest(".term");
+    if (term) {
+      if (pop && pop.dataset.for === term.dataset.t) { closePop(true); return; }
+      const g = D.glossary[+term.dataset.t];
+      openPop(term, `<dl><dt>${inline(g.term)}</dt><dd>${inline(g.means)}</dd></dl>`, false, plain(g.term));
+      return;
+    }
+    const cr = t.closest(".crumb[data-map]");
+    if (cr) {
+      if (pop && pop.dataset.for === cr.dataset.map) { closePop(true); return; }
+      openPop(cr, `<div class="eyebrow" style="margin-bottom:8px">Where this file lives</div>${codeMap(cr.dataset.map)}`, true, "Code map");
+      return;
+    }
+    const link = t.closest("[data-ln]");
+    if (link) peekToggle(link);
   });
-  window.addEventListener("hashchange", render);
+  document.addEventListener("toggle", (e) => {
+    const d = e.target;
+    if (d.dataset && d.dataset.review) { if (d.open) reviewOpen.add(+d.dataset.review); else reviewOpen.delete(+d.dataset.review); }
+  }, true);
+  // Hover or focus a linked item (or its line) to light both.
+  const linkOf = (e) => {
+    const el = e.target.closest("[data-ln], .row[data-n]");
+    const n = el && (el.dataset.ln || el.dataset.n);
+    return n && app.querySelector(`[data-ln="${n}"]`) ? n : null;
+  };
+  ["mouseover", "focusin"].forEach((ev) => app.addEventListener(ev, (e) => { const n = linkOf(e); if (n) setLinked(n, true); }));
+  ["mouseout", "focusout"].forEach((ev) => app.addEventListener(ev, (e) => { const n = linkOf(e); if (n) setLinked(n, false); }));
+  window.addEventListener("hashchange", () => {
+    const i = current();
+    if ((i < 0 ? "overview" : FLAT[i].id) !== shownId) render();
+  });
+  window.addEventListener("resize", () => { layout(); });
   document.addEventListener("keydown", (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    const t = e.target.closest ? e.target : document.body;
+    // Esc only ever closes things: a popover, then the Terms menu, then the step (back to the overview).
+    if (e.key === "Escape") {
+      if (pop) { closePop(true); return; }
+      const menu = app.querySelector("details.terms-menu[open]");
+      if (menu) { menu.open = false; menu.querySelector("summary").focus(); return; }
+      if (current() >= 0) go("overview");
+      return;
+    }
+    if (t.closest(".pop, details.terms-menu[open]")) return;
+    const row = t.closest("[data-pick]");
+    if (row) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); answer(row.dataset.pick, +row.dataset.n); }
+      else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const sib = e.key === "ArrowDown" ? row.nextElementSibling : row.previousElementSibling;
+        if (sib) { row.tabIndex = -1; sib.tabIndex = 0; sib.focus(); }
+      }
+      return; // arrows on a line you're choosing never leave the step
+    }
+    const item = t.closest(".lk");
+    if (item && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); peekToggle(item); return; }
+    const ctl = t.closest(".seq-ctl");
+    if (ctl && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+      e.preventDefault();
+      const fig = ctl.closest("figure"), k = +fig.dataset.k || 0;
+      if (e.key === "ArrowRight") seqStep(fig, k ? "next" : "start");
+      else if (k > 1) seqStep(fig, "prev");
+      return;
+    }
     const i = current();
-    if (e.key === "Escape" && i >= 0) go("overview");
-    else if ((e.key === "ArrowRight" || e.key === "j") && i < FLAT.length - 1) go(FLAT[i + 1].id);
+    if ((e.key === "ArrowRight" || e.key === "j") && i < FLAT.length - 1) go(FLAT[i + 1].id);
     else if ((e.key === "ArrowLeft" || e.key === "k") && i > 0) go(FLAT[i - 1].id);
   });
 
   measure();
   render();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); if (current() >= 0) render(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); if (current() >= 0) layout(); });
 })();
 </script>
