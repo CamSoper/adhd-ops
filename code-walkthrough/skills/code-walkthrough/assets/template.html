@@ -416,7 +416,8 @@ a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
         ${visual(D.overview_visual)}
         <div class="chapters">${chapters}</div>
         ${D.glossary && D.glossary.length ? `<section aria-labelledby="terms" style="display:grid;gap:14px"><h3 id="terms">Words this walkthrough uses</h3>${glossary()}</section>` : ""}
-        <p class="how">Every snippet and line number here comes from git at ${short}, so the code is exactly what was in the repo at that commit${D.links ? ", and every line number opens that line on GitHub" : ""}. The narration and diagrams are an explanation of it, written for this walkthrough. Ticks mark the steps you've opened, in this browser only.</p>
+        ${D.known_drift ? `<section aria-labelledby="drift" style="display:grid;gap:8px"><h3 id="drift">Known drift</h3><p class="how">${inline(D.known_drift)}</p></section>` : ""}
+        <p class="how">Every snippet and line number here comes from git at ${short}, so the code is exactly what was in the repo at that commit${D.links ? ", and every line number opens that line on GitHub" : ""}. The narration and diagrams are an explanation of it, written for this walkthrough. Ticks mark the steps you've opened, in this browser only.${D.review === "self-review" ? " Review: self-review. Its author checked it; no independent reviewer did." : ""}</p>
       </div>`;
   }
 

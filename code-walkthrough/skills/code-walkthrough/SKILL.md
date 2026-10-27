@@ -55,6 +55,10 @@ It needs `git` and `python3` (standard library only). Run it with `python3 -I`.
    (line numbers stop being links; everything else works). Whatever you pin, write its **full
    SHA** into the plan's `ref` (`git rev-parse <ref>`), never the branch name: `origin/main` moves,
    and the next rebuild would describe different code.
+5. **Live config vs git.** When the code is deployed from a UI (Node-RED flows, Home Assistant
+   automations), the running copy can differ from git. Before pinning, compare the git snapshot
+   with the live config (export it, or read it through the system's API). Say in the summary which
+   one the tour shows, and list any differences in `known_drift`.
 
 State your reading of 1-3 in one line and keep going. Ask only when the scope genuinely can't be
 inferred ("walk me through it" in a monorepo with no hint where).
@@ -99,7 +103,14 @@ and waiting costs them more than a redirect does.
   *why* it's like that and what it guarantees, never what it says line by line.
 - **One new idea per step**, and a title that states it as a claim ("A tick only approves what the
   title names"), not a topic ("Validation").
-- **Use the spine scenario's names** so every step connects back to it.
+- **Use the spine scenario's names** so every step connects back to it. Name the scenario in plain
+  words in the overview and in step 1.1 ("one task, from title to tick"). "Spine" is your word, not
+  the reader's: it never appears in reader-facing text, and the review flags it as a `must`.
+- **No forward references.** No "(next step)", "later" or "we'll see". Reorder, or state the fact
+  where it's first used.
+- **No maintainer footnotes in steps.** Drift between the code and its docs or comments ("the
+  description still says...") goes in the plan's one optional `known_drift` note, never in a step.
+- **Prompt and config files:** excerpt the 2-5 lines the step is about, not the whole prompt.
 - **Signal.** 1-5 focus lines per code step, snippets of 30 lines or fewer. Callouts (1-4) when a
   snippet's anatomy is the point.
 - **Visuals** per `references/visuals.md`: one big-picture visual on the overview, then one where a
@@ -131,16 +142,28 @@ The bar is `references/review-rubric.md`. Two halves, then one revision.
 1. **Mechanical.** `python3 -I "$WT" review "$W/plan.json" --repo <repo> > "$W/review.json"`.
    Lengths, sentence sizes, focus counts, chapter sizes and minutes, missing check questions, and
    the **identifier check**: every `backticked` name in the narration, captions, visuals or wrap-ups
-   must exist in scope at the pinned commit, or it's flagged as a possible invention.
+   must exist in scope at the pinned commit, or it's flagged as a possible invention; every one in a
+   chapter's check question or answer must also appear in that chapter's own steps. It also flags
+   "spine" in reader-facing text and over-wide lines shown from prompt or config files.
 2. **Independent.** Hand the judgment half to a **fresh subagent** (Agent tool) with the reviewer
    brief in `review-rubric.md`, "Reviewer brief". It didn't write the walkthrough, so it reads it
-   the way the reader will. It returns findings as JSON with quoted evidence. No Agent tool → do it
-   yourself, cold: re-read every step in order as the reader, against the rubric, and write the
-   findings down before you change anything.
+   the way the reader will. It returns findings as JSON with quoted evidence. No Agent tool, or the
+   session can't spawn a subagent → do it yourself, cold: re-read every step in order as the
+   reader, against the rubric, and write the findings down before you change anything. Then say so
+   in the report, and set the plan's `"review": "self-review"` so the page footer says no
+   independent reviewer checked it.
 3. **Revise once.** Fix every `must` (from either half), and every `should` you agree with; note
    the ones you decline and why. Rebuild, re-run the mechanical review. **Zero `must` flags is the
    bar to publish.** A second round only if a `must` remains; never a third -- publish with what's
    left listed in your report.
+
+## Step 6b -- Privacy pass (optional; private or home systems)
+
+For a walkthrough of private code or a home system, review it once more before publishing, as
+someone who shouldn't have it: secrets or tokens in shown code, personal data (names, addresses,
+schedules), exposure maps (hostnames, IPs, open ports, which device guards what), and detail that
+helps social engineering or a physical break-in (alarm logic, lock automations, when the house is
+empty). Cut or generalize each finding, rebuild, and re-run the mechanical review.
 
 ## Step 7 -- Look once, publish
 
@@ -158,7 +181,8 @@ Short, and lead with the link:
 
 - the link, the reader and goal, chapters / steps / minutes, the pinned commit;
 - the spine scenario and the one-line chapter outline;
-- the review: what the revision changed, any `should` you declined and why, anything unverified;
+- the review: what the revision changed, any `should` you declined and why, anything unverified,
+  and whether it was independent or a self-review;
 - where the plan is (`$W/plan.json`) and how to refresh it (below). Offer to save it somewhere
   durable if the user will want to re-run it -- the scratch directory doesn't outlive the session.
 

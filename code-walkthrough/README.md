@@ -54,7 +54,7 @@ code-walkthrough/
     │   ├── critical-path.md            # the ordering method and analysis.md's shape
     │   ├── plan-format.md              # the plan JSON
     │   ├── visuals.md                  # when to draw what, and the six visual kinds
-    │   ├── review-rubric.md            # T1-T8, A1-A8, the reviewer brief, revision rules
+    │   ├── review-rubric.md            # T1-T10, A1-A9, the reviewer brief, revision rules
     │   └── examples/                   # ada-desk: plan + analysis, review round included
     └── scripts/
         ├── walkthrough.py              # map | build | review -- stdlib only
