@@ -71,6 +71,17 @@ list, state store, and voice. Nothing personal is baked in; nothing runs until y
 - Optional: a push-notification channel (ntfy, Pushover, Home Assistant notify, ...) for the
   once-a-day rescue nudge. Everything degrades gracefully without it.
 
+## Also in this repo: code-walkthrough
+
+`code-walkthrough` turns a repo, a directory, or a PR into a guided, paged walkthrough: story on the left, the exact code on the right, pinned to a commit with every line number linked to GitHub. It follows the same design rules as the rest of this repo: the point first, one idea per step, short chapters, and a checklist that shows progress. A script copies every snippet from git by its exact text, so the model can't invent code or line numbers.
+
+```
+/plugin marketplace add CamSoper/adhd-ops
+/plugin install code-walkthrough@adhd-ops
+```
+
+Then `/walkthrough <path, repo, branch, or PR>`. See [code-walkthrough/README.md](code-walkthrough/README.md).
+
 ## Provenance and privacy
 
 This is a sanitized public fork of a private personal system. The private version's config --
