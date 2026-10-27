@@ -157,13 +157,18 @@ The bar is `references/review-rubric.md`. Two halves, then one revision.
    bar to publish.** A second round only if a `must` remains; never a third -- publish with what's
    left listed in your report.
 
-## Step 6b -- Privacy pass (optional; private or home systems)
+## Step 6b -- Exposure pass (only when the audience is wider than the code's)
 
-For a walkthrough of private code or a home system, review it once more before publishing, as
-someone who shouldn't have it: secrets or tokens in shown code, personal data (names, addresses,
-schedules), exposure maps (hostnames, IPs, open ports, which device guards what), and detail that
-helps social engineering or a physical break-in (alarm logic, lock automations, when the house is
-empty). Cut or generalize each finding, rebuild, and re-run the mechanical review.
+Private repos are a normal use: a walkthrough of private code for people who can already read that
+code needs no extra pass, and nothing in it should be cut for being private. Run this pass only when
+the page will reach readers the code doesn't (a private or home system shown on a public portfolio,
+a work repo shared outside the team), or when it tours a home or physical-security system.
+
+Then review it once more as a stranger who shouldn't have it: secrets or tokens in shown code,
+personal data (names, addresses, schedules), exposure maps (hostnames, IPs, open ports, which device
+guards what), and detail that helps social engineering or a physical break-in (alarm logic, lock
+automations, when the house is empty). Generalize or cut each finding, rebuild, and re-run the
+mechanical review. This pass changes what's shown; it never blocks building the walkthrough.
 
 ## Step 7 -- Look once, publish
 
