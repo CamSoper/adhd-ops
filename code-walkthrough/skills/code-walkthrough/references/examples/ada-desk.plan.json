@@ -1,0 +1,789 @@
+{
+  "ref": "cbdb488172d1618e1fe2132a24d5ad2bea63615d",
+  "scope": "ada-desk",
+  "title": "Ada Desk Walkthrough",
+  "audience": "someone new to ada-desk, or Alex coming back to it",
+  "goal": "you'll know where each rule lives, and how to change one without breaking the contract.",
+  "summary": [
+    "ada-desk turns Microsoft To Do into the place Alex answers Ada. Ada stages asks there, Alex answers with a tick, a delete or a drag, and a heartbeat routine acts on the answers every two hours. Real work goes to a second routine, the Workshop, which only leaves drafts.",
+    "This walkthrough follows two scenarios through the code: a tick on a ✋ go task, then a task dragged into 🤖 that comes back as a draft. It skips Threads, your-tap evidence checks and interactive mode."
+  ],
+  "glossary": [
+    {
+      "term": "✋ go task",
+      "means": "A task in the ✋ Ada needs your OK list that Ada prepared. Alex's tick runs exactly the action in its machine block."
+    },
+    {
+      "term": "your-tap task",
+      "means": "A ✋ task for a last step only Alex can take, like sending a draft or merging a PR. The desk clears it when it sees he did it; a `manual` one waits for his tick."
+    },
+    {
+      "term": "🤖 handoff",
+      "means": "A task Alex puts in the 🤖 Assigned to Ada list, or titles \"Ada:\" in his own lists. It's his request."
+    },
+    {
+      "term": "machine block",
+      "means": "The lines under `--- ada-desk ---` in a ✋ task's body. They say exactly what a tick does."
+    },
+    {
+      "term": "`✓?`",
+      "means": "A title prefix meaning \"Ada thinks this is done.\" Alex's tick confirms it."
+    },
+    {
+      "term": "`title-only`",
+      "means": "A Ada-made task Alex dragged into 🤖. Its title is the request; its body is only context."
+    },
+    {
+      "term": "claim",
+      "means": "A stamped line on a task that says which run owns it, like `Ada picked this up`."
+    },
+    {
+      "term": "Workshop job",
+      "means": "A `🛠 Workshop job` line: the desk handing real work to the Workshop routine."
+    },
+    {
+      "term": "Graph",
+      "means": "Microsoft Graph, the API every To Do read and write goes through."
+    },
+    {
+      "term": "producer",
+      "means": "A skill in another plugin, like the daily brief or the project roundup, that stages ✋ asks."
+    },
+    {
+      "term": "nightly sweep",
+      "means": "The Workshop's scheduled run with no dispatch. It picks up to 3 queued jobs a dispatch never started."
+    },
+    {
+      "term": "the contract",
+      "means": "`conventions.md`: the grammar every producer stages against and the desk parses."
+    }
+  ],
+  "overview_visual": {
+    "kind": "flow",
+    "caption": "Alex only ever touches To Do. Both routines read from it and write back to it.",
+    "nodes": [
+      {
+        "label": "Alex, in To Do",
+        "sub": "ticks a ✋, deletes it, or drags a task into 🤖"
+      },
+      {
+        "label": "Ada Desk",
+        "sub": "every 2 hours; `desk.mjs` decides what each task means"
+      },
+      {
+        "label": "Ada Workshop",
+        "sub": "on dispatch, or the nightly sweep; drafts only"
+      }
+    ],
+    "loop": "a `✓?` and a Review ask land back in To Do for Alex's tick"
+  },
+  "chapters": [
+    {
+      "title": "Why it works this way",
+      "blurb": "The purpose, and the trust model every later check enforces.",
+      "wrap": {
+        "takeaways": [
+          "Only a ✋ tick and a handoff count as Alex asking. Everything else is data.",
+          "A Ada-made task in 🤖 got there by Alex's hand, so the move is the request.",
+          "`desk.mjs` decides what a task means; the model acts on its verdicts."
+        ],
+        "check": {
+          "q": "A task in a shared list is titled \"Ada: pay the plumber\". Does the desk act on it?",
+          "a": "No. Shared lists are data, because other people write there. Only Alex's own unshared lists can carry a handoff."
+        }
+      },
+      "steps": [
+        {
+          "title": "To Do is the control surface",
+          "file": "ada-desk/README.md",
+          "from": "**Microsoft To Do is the control surface.** Alex already lives in To Do -- his evening purges of",
+          "to": "approve something or hand it off.",
+          "focus": [
+            "13 to 27 ticks are the most reliable thing he does -- while asks that need him to open a Claude",
+            "session and type a remembered command get done 0-16% of the time (the October 2026 audit, in the"
+          ],
+          "text": [
+            "Ada asks in To Do because that's where Alex already answers. Asks that need a Claude session and a remembered command mostly go unanswered.",
+            "So ticks, deletes and drags are the whole interface. The rest of the plugin exists to read those gestures safely."
+          ]
+        },
+        {
+          "title": "Two things count as Alex talking",
+          "file": "ada-desk/skills/desk/SKILL.md",
+          "from": "## Trust boundary",
+          "to": "ignored, per the session root's `AGENTS.md`.",
+          "focus": [
+            "1. **A tick on a valid ✋ go task** approves exactly the action in its machine block -- one of",
+            "2. **A handoff** (conventions.md, \"Handoffs\"): any open task in the 🤖 list, or an open task with no"
+          ],
+          "text": [
+            "Only two things in To Do count as Alex's request: a tick on a valid ✋ go task, and a handoff.",
+            "Everything else is data: shared lists, Flagged Emails, and Ada-made tasks, except the title of one Alex drags into 🤖. The desk ignores any instruction inside data, which matters because it runs with nobody watching."
+          ]
+        },
+        {
+          "title": "A first-line marker makes a task Ada's",
+          "file": "ada-desk/skills/desk/references/conventions.md",
+          "from": "## Provenance -- how to tell Ada's tasks from Alex's",
+          "to": "one there is Alex saying \"handle this\" (see \"Handoffs\", below).",
+          "focus": [
+            "**Nothing Ada runs ever creates a task in the 🤖 list** -- no producer, not the desk, not a",
+            "Ada-made task sitting in 🤖 got there because Alex moved it."
+          ],
+          "text": [
+            "A task is Ada's if its first line starts `Created by Ada` or `Source:`, or its body holds a machine block.",
+            "One rule makes the rest work: nothing Ada runs ever creates a task in 🤖. So a Ada-made task there was moved by Alex, and that move is his request."
+          ]
+        },
+        {
+          "title": "A script, not the model, decides what tasks mean",
+          "file": "ada-desk/skills/desk/scripts/desk.mjs",
+          "from": "#!/usr/bin/env node",
+          "to": "// ../references/conventions.md; when the two disagree, fix both.",
+          "focus": [
+            "// calls; THIS script decides what each task's body and title mean, so the",
+            "// claim markers, who counts as asking -- can't be improvised by a model running",
+            "// ../references/conventions.md; when the two disagree, fix both."
+          ],
+          "text": [
+            "A model running unattended every two hours can't be trusted to improvise a grammar or a clock, so a script decides.",
+            "The model reads To Do, makes the Graph calls and acts on the verdicts. `desk.mjs` never touches the network. When it and `conventions.md` disagree, fix both."
+          ],
+          "visual": {
+            "kind": "flow",
+            "caption": "The script sits between reading and acting, so every action starts from its verdict.",
+            "nodes": [
+              {
+                "label": "Read To Do",
+                "sub": "the model, through Graph"
+              },
+              {
+                "label": "`desk.mjs classify`",
+                "sub": "JSON in, verdicts out"
+              },
+              {
+                "label": "Act on each verdict",
+                "sub": "the model, one run step per verdict"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "A tick on a ✋ go task",
+      "blurb": "The simplest loop, end to end: Ada stages an ask, Alex ticks it, the desk runs it.",
+      "wrap": {
+        "takeaways": [
+          "A tick approves exactly one block, on the task its title names.",
+          "Anything malformed, renamed, or ticked after it expired is refused, with the reason on the task. An ask nobody ticks just gets ⌛.",
+          "Every action is safe to run twice."
+        ],
+        "check": {
+          "q": "Ada staged a ✋ to move a task, and Alex renamed that task before ticking. What happens?",
+          "a": "The desk refuses and changes nothing. The target's live title no longer matches `target_title`, so it isn't the task Alex approved changing."
+        }
+      },
+      "steps": [
+        {
+          "title": "A go task is a title plus a block",
+          "file": "ada-desk/skills/desk/references/conventions.md",
+          "from": "## Kind 1 -- ✋ go: Ada did the work, the tick is the approval",
+          "to": "expires: 2026-11-01T09:02:11-05:00",
+          "focus": [
+            "**Title:** `<plain action> -- tick to go`. Say exactly what will happen, in words Alex can approve",
+            "--- ada-desk ---"
+          ],
+          "callouts": [
+            {
+              "line": "kind: go",
+              "note": "`go`: Alex's tick runs it. A `tap` block waits for him to act instead."
+            },
+            {
+              "line": "args: {\"list_id\":\"<source list id>\",\"task_id\":\"<task id>\",\"target_title\":\"Fix Atlas's tag engraving\",\"to_list_id\":\"<Someday list id>\"}",
+              "note": "Which task to change, and its title when staged, as one line of JSON."
+            },
+            {
+              "line": "key: roundup-park:<task id>",
+              "note": "Producers skip an ask whose key is already in ✋, and remember deleted ones themselves."
+            },
+            {
+              "line": "expires: 2026-11-01T09:02:11-05:00",
+              "note": "Unticked past this, the title gets ⌛ and the desk ignores it."
+            }
+          ],
+          "text": [
+            "A go task pairs a title Alex approves with a machine block that says exactly what his tick does.",
+            "Here the roundup wants to park \"Fix Atlas's tag engraving\" in Someday. The title names that task in words Alex can read on a lock screen; the block is what the desk runs."
+          ]
+        },
+        {
+          "title": "Every run starts with the script's verdicts",
+          "file": "ada-desk/skills/desk/SKILL.md",
+          "from": "5. **Classify.** Write each read's JSON to a file and run the script on it:",
+          "to": "Exit non-zero → it says why; fix the input, never hand-classify around it.",
+          "focus": [
+            "Kind 3). **The script's verdict is final** -- don't re-derive it, don't override it."
+          ],
+          "text": [
+            "Each run pipes its To Do reads through `desk.mjs classify` and acts only on what comes back.",
+            "Alex's tick on the Atlas task comes back as `execute`. The verdict is final: when the script fails, the fix is the input, never a classification by hand."
+          ],
+          "visual": {
+            "kind": "table",
+            "caption": "Every verdict maps to one step of the run. With no verdicts and no Threads work, the run stops after classifying.",
+            "columns": [
+              "Verdict in `actions`",
+              "Handled in"
+            ],
+            "rows": [
+              [
+                "`execute`, `refuse`",
+                "Step 2: ✋ go ticks"
+              ],
+              [
+                "`tap`",
+                "Step 3: your-tap evidence"
+              ],
+              [
+                "`handoff`, `stale-claim`, and the Workshop's `workshop-stale`, `workshop-died`, `standing-due`, `standing-done`",
+                "Step 4: handoffs and Workshop jobs"
+              ],
+              [
+                "`revert`",
+                "Step 5: stale ✓? marks"
+              ],
+              [
+                "`expire`, `follow-up`",
+                "Step 6: expiries and follow-through"
+              ]
+            ]
+          }
+        },
+        {
+          "title": "The parser refuses instead of guessing",
+          "file": "ada-desk/skills/desk/scripts/desk.mjs",
+          "from": "function parseBlock(lines) {",
+          "to": "return { present: true, block: v.errs.length ? null : v.block, errs: v.errs };",
+          "focus": [
+            "if (at.length > 1) return { present: true, block: null, errs: [\"the body has more than one machine block\"] };",
+            "if (k in raw) errs.push(`block key \"${k}\" appears twice`);",
+            "errs.push(`${k} is not one line of valid JSON`);"
+          ],
+          "text": [
+            "`parseBlock` refuses a malformed block; it never repairs one.",
+            "Two blocks in one body, a repeated key, or arguments that aren't one line of JSON all become errors. The desk writes the reason on the task, so Alex sees why nothing happened."
+          ]
+        },
+        {
+          "title": "A tick runs only after four checks pass",
+          "file": "ada-desk/skills/desk/scripts/desk.mjs",
+          "from": "if (t.resolved) return { out, t, counts: false };",
+          "to": "} else out.actions.push(\"execute\");",
+          "focus": [
+            "if (!norm(t.title).includes(norm(blk.args.target_title).slice(0, 40))) {",
+            "out.reason = \"expired before the tick -- nothing changed\";"
+          ],
+          "text": [
+            "A tick runs nothing until four checks pass, in order.",
+            "`classify` refuses a block that changes some other task, ticked or not: the title is what Alex actually read. A task that already carries a `Done by Ada` line is skipped, so each tick is handled once."
+          ],
+          "visual": {
+            "kind": "ladder",
+            "caption": "The first check that fails refuses the tick. Only a task that passes all four runs.",
+            "rungs": [
+              {
+                "test": "a machine block with no `Created by Ada` line",
+                "then": "`refuse`: not one of mine"
+              },
+              {
+                "test": "the block fails validation",
+                "then": "`refuse`, with the parser's errors"
+              },
+              {
+                "test": "the title doesn't contain `target_title`",
+                "then": "`refuse`: nothing changed"
+              },
+              {
+                "test": "ticked after `expires`",
+                "then": "`refuse`: expired before the tick"
+              }
+            ],
+            "otherwise": "`execute`"
+          },
+          "callouts": [
+            {
+              "line": "if (t.resolved) return { out, t, counts: false };",
+              "note": "A `Done`, `Refused` or `Seen done` line means it's handled: skip it."
+            }
+          ]
+        },
+        {
+          "title": "The target is checked again before anything changes",
+          "file": "ada-desk/skills/desk/SKILL.md",
+          "from": "**`execute`** → for each, in order:",
+          "to": "case-insensitive). Else refuse \"it was renamed since you OK'd it -- nothing changed\".",
+          "focus": [
+            "3. **Check the title**: the target's live title must equal `args.target_title` (trimmed,"
+          ],
+          "text": [
+            "Before acting, the model re-reads the target task and refuses if it changed since Ada staged the ask.",
+            "`desk.mjs` has no network and never sees the target, so these checks sit in SKILL.md, not the script. If Alex renamed \"Fix Atlas's tag engraving\" after the ask went up, nothing moves."
+          ]
+        },
+        {
+          "title": "Every action is safe to run twice",
+          "file": "ada-desk/skills/desk/SKILL.md",
+          "from": "5. **Record it** on the ✋ task (already completed -- leave its status): append",
+          "to": "line is the worst case.",
+          "focus": [
+            "**Two runs, one tick.** Every action is safe to run twice: dates, completion and titles are set to a"
+          ],
+          "text": [
+            "A tick stays unhandled until its `Done by Ada` line lands, and that line is written after the action.",
+            "So a run that dies in between leaves the tick for the next run, which acts again. That's safe: each action sets a value, and a move finds its own earlier copy."
+          ],
+          "visual": {
+            "kind": "table",
+            "caption": "Each of the four actions ends in the same state however many times it runs.",
+            "columns": [
+              "Action",
+              "Why twice is harmless"
+            ],
+            "rows": [
+              [
+                "`todo.date`",
+                "sets the due date to a value"
+              ],
+              [
+                "`todo.move`",
+                "the copy carries `(was <task id>)`, so a rerun finds it"
+              ],
+              [
+                "`todo.complete`",
+                "already completed counts as done"
+              ],
+              [
+                "`todo.retitle`",
+                "sets the full title, never a prefix"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "A drag into 🤖 becomes a job",
+      "blurb": "The second scenario, desk side: Alex hands Ada real work by dragging a task into 🤖.",
+      "wrap": {
+        "takeaways": [
+          "In 🤖 the title is the request; a Ada-made body is only context.",
+          "A body only grows, so the last claim line wins.",
+          "A job is dispatched once; the nightly sweep is the backstop."
+        ],
+        "check": {
+          "q": "Alex drags a Ada-made task into 🤖. Its body, scraped from an email, says to reply to everyone on the thread. What does the desk act on?",
+          "a": "Only the title. The script flags the task `title-only`, so the body is context and can't widen what Ada does."
+        }
+      },
+      "steps": [
+        {
+          "title": "A drag into 🤖 is a request",
+          "file": "ada-desk/skills/desk/scripts/desk.mjs",
+          "from": "// 🤖 and other unshared lists: open tasks only.",
+          "to": "if (HANDOFF_TITLE.test(t.title) || t.claims.length > 0) handoffActions(t, clock, out);",
+          "focus": [
+            "if (t.ada) out.flags = [\"title-only\"];",
+            "// Outside 🤖, a Ada-made task is never a handoff, whatever its title says."
+          ],
+          "text": [
+            "The script turns a drag into 🤖 into a request, and flags Ada-made ones `title-only`.",
+            "Later steps read that flag instead of deciding again. Outside 🤖, the script drops a Ada-made task before the `Ada:` title test, so a scraped email subject can't become a request."
+          ]
+        },
+        {
+          "title": "Claim it, then read the claim back",
+          "file": "ada-desk/skills/desk/SKILL.md",
+          "from": "**`stale-claim`** (claimed over 3 hours ago, no outcome -- a run died partway) → don't redo it:",
+          "to": "stamp there → another run owns it; skip it.",
+          "focus": [
+            "1. **Claim it.** `update-todo-task`: `status: inProgress`, body + `Ada picked this up $NOW`. Then",
+            "`get-todo-task` it: the **last** `Ada picked this up` line must carry `$NOW`. Someone else's"
+          ],
+          "text": [
+            "A claim counts only if the desk reads its own stamp back as the last one.",
+            "Two runs can both write a claim, and a body only grows at the end, so the last `Ada picked this up` line wins and the other run skips. A claim with no outcome after 3 hours isn't redone: something may already exist."
+          ]
+        },
+        {
+          "title": "Picking the tier is the model's judgment call",
+          "file": "ada-desk/skills/desk/SKILL.md",
+          "from": "3. **Make the tier call.** Check the rungs in this order -- (a), (b), (d), (c) -- and the first",
+          "to": "part, and sending it is Alex's tap in Gmail.",
+          "focus": [
+            "3. **Make the tier call.** Check the rungs in this order -- (a), (b), (d), (c) -- and the first"
+          ],
+          "text": [
+            "Besides the words it writes, a handoff's tier is the only call the model makes on judgment.",
+            "The rungs go in a fixed order and the first fit wins. For a `title-only` handoff, Ada first writes `Ada took this as:` so Alex sees her reading."
+          ],
+          "visual": {
+            "kind": "ladder",
+            "caption": "Order matters: a job only reaches the Workshop when the desk can't simply do it or stage it.",
+            "rungs": [
+              {
+                "test": "fits the desk tier: lookups, mail and calendar reads, small To Do changes, a reply draft",
+                "then": "(a) do it now and mark it `✓?`"
+              },
+              {
+                "test": "Ada can prepare it, but the last step goes past the tier",
+                "then": "(b) stage a ✋ for Alex's OK"
+              },
+              {
+                "test": "real work to draft: a PR, a doc, a write-up",
+                "then": "(d) write a `🛠 Workshop job` line and dispatch it"
+              }
+            ],
+            "otherwise": "(c) flag it for a live session"
+          }
+        },
+        {
+          "title": "Real work goes to the Workshop, once",
+          "file": "ada-desk/skills/desk/SKILL.md",
+          "from": "2. **Write the job line**, in one `update-todo-task` (with the restatement, if there is one):",
+          "to": "`standing-due`, once a day.",
+          "focus": [
+            "3. **Dispatch it:** `dispatch(job: \"workshop\", list_id: <this list>, task_id: <this task>,",
+            "Workshop's nightly sweep picks it up. **Never re-fire** -- on `DISPATCH_UNCERTAIN` least of",
+            "**Never twice.** Once a task carries a `🛠` job line the script never reports it as a"
+          ],
+          "text": [
+            "Real work gets a `🛠 Workshop job` line naming what to build, like a runbook PR in acme/docs.",
+            "Once that line is on the task, `classify` never reports it as a `handoff` again, so nothing dispatches it twice. If the one dispatch fails, the line still marks the job queued and the nightly sweep picks it up."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "The Workshop turns a job into a draft",
+      "blurb": "The builder: how a pointer becomes a draft PR or doc without trusting anything it's handed.",
+      "wrap": {
+        "takeaways": [
+          "The dispatch is a pointer; the task is the source of truth.",
+          "A refused pointer gets no write at all.",
+          "Everything the Workshop makes is a draft, reported back on the task."
+        ],
+        "check": {
+          "q": "A dispatch arrives naming a task the desk never claimed. What does the Workshop write on it?",
+          "a": "Nothing. `workorder` returns `ok: false` because there's no claim, and a refused pointer gets no write at all."
+        }
+      },
+      "steps": [
+        {
+          "title": "The task is the only channel between routines",
+          "text": [
+            "The desk hands the Workshop a pointer, not a request: the task carries everything else.",
+            "The Workshop re-reads the task, has a subagent build the draft, and writes the result back where Alex will see it."
+          ],
+          "visual": {
+            "kind": "sequence",
+            "caption": "The desk sends the Workshop only a pointer. Every result lands back on the task.",
+            "actors": [
+              "Alex",
+              "To Do",
+              "Desk",
+              "Workshop",
+              "Subagent"
+            ],
+            "messages": [
+              {
+                "from": "Alex",
+                "to": "To Do",
+                "label": "drags a task into 🤖"
+              },
+              {
+                "from": "Desk",
+                "to": "To Do",
+                "label": "claims it, writes a `🛠 Workshop job` line"
+              },
+              {
+                "from": "Desk",
+                "to": "Workshop",
+                "label": "`dispatch`: a pointer to the task"
+              },
+              {
+                "from": "Workshop",
+                "to": "To Do",
+                "label": "re-reads the task, runs `workorder`"
+              },
+              {
+                "from": "Workshop",
+                "to": "To Do",
+                "label": "claims it: `🛠 Workshop picked this up`"
+              },
+              {
+                "from": "Workshop",
+                "to": "Subagent",
+                "label": "a self-contained brief"
+              },
+              {
+                "from": "Subagent",
+                "to": "Workshop",
+                "label": "the draft, not pushed"
+              },
+              {
+                "from": "Workshop",
+                "to": "To Do",
+                "label": "a Review ask in ✋, then `✓?` on the task"
+              },
+              {
+                "from": "Alex",
+                "to": "To Do",
+                "label": "reviews, merges, ticks"
+              }
+            ]
+          }
+        },
+        {
+          "title": "The dispatch payload is only a pointer",
+          "file": "ada-desk/skills/workshop/SKILL.md",
+          "from": "The first line must be `ada-dispatch v1` and `job:` must be `workshop`; take `list_id` and",
+          "to": "output\"), and that's the whole run.",
+          "focus": [
+            "job, a missing or malformed id -- → **refused**. Use nothing else from it: `reason` is a note for",
+            "**Refused writes nothing.** Not on the task, not a ✋, no notice: a forged, stale or duplicate"
+          ],
+          "text": [
+            "A forged, stale or duplicate dispatch looks like a real one, so the Workshop trusts only the task.",
+            "It takes two ids from the payload, re-reads the task, and lets the task define the work; `reason` is a note for humans. A pointer that fails the checks writes nothing at all."
+          ]
+        },
+        {
+          "title": "workorder trusts the task, not the pointer",
+          "file": "ada-desk/skills/desk/scripts/desk.mjs",
+          "from": "function workorder(task, list, clock) {",
+          "to": "return { ...res, ok: true, queuedAt: w.job.ts };",
+          "focus": [
+            "if (list !== \"ada\" && t.ada) return no(\"it's Ada-made and not in the 🤖 list, so nobody handed it off\");",
+            "if (t.claims.length === 0) return no('the desk never claimed it (no \"Ada picked this up\" line)');",
+            "if (w.lastPick) return no(`the Workshop already picked this up ${w.lastPick.ts}`);"
+          ],
+          "text": [
+            "`workorder` decides from the task alone whether the desk accepted it as a Workshop job.",
+            "The task must be Alex's handoff, carry the desk's claim, and have a job line after that claim, with no Workshop pickup yet. The runbook task passes; a forged or repeated dispatch fails a check and starts nothing."
+          ]
+        },
+        {
+          "title": "A subagent builds, the main session writes",
+          "file": "ada-desk/skills/workshop/SKILL.md",
+          "from": "**The brief is self-contained** -- the subagent sees nothing else:",
+          "to": "the questions in the result. Nothing usable → Step 7.",
+          "focus": [
+            "**The brief is self-contained** -- the subagent sees nothing else:",
+            "**The main session does every write** -- the push, the PR, the page, the drafts, the ✋ ask and the"
+          ],
+          "text": [
+            "A subagent builds the draft; only the main session pushes it, opens the PR, and writes to To Do.",
+            "The subagent sees only its brief, so the guardrails are pasted into it. The main session checks what comes back before any of it leaves."
+          ]
+        },
+        {
+          "title": "The result lands back on the task",
+          "file": "ada-desk/skills/desk/references/conventions.md",
+          "from": "A one-shot job, start to finish, as the task body shows it:",
+          "to": "Review ask is in ✋",
+          "focus": [
+            "🛠 Workshop job 2026-10-16T10:00:20-05:00: draft PR in acme/docs -- a secret-rotation runbook page",
+            "✓? Ada 2026-10-16T10:48:12-05:00: draft PR ready -- acme/docs#1234"
+          ],
+          "text": [
+            "The result lands as a `✓?` on the handoff, plus a Review ask in ✋ for a PR or doc.",
+            "Every stage is a line on the task, so a job nobody picks up turns `workshop-stale` after 26 hours, and one that stalls turns `workshop-died` after 6."
+          ],
+          "visual": {
+            "kind": "states",
+            "caption": "A handoff's whole life is written on the task, so a stalled job can't hide.",
+            "states": [
+              {
+                "label": "handed off"
+              },
+              {
+                "label": "claimed"
+              },
+              {
+                "label": "queued",
+                "sub": "`🛠 Workshop job` line"
+              },
+              {
+                "label": "picked up",
+                "sub": "`🛠 Workshop picked this up`"
+              },
+              {
+                "label": "draft ready",
+                "sub": "`✓?` and a Review ask"
+              }
+            ],
+            "edges": [
+              "desk claims",
+              "desk writes the job line",
+              "`dispatch` or the nightly sweep",
+              "draft built"
+            ],
+            "exits": [
+              {
+                "from": "queued",
+                "label": "no pickup in 26 hours",
+                "to": "`workshop-stale`"
+              },
+              {
+                "from": "picked up",
+                "label": "no outcome in 6 hours",
+                "to": "`workshop-died`"
+              }
+            ]
+          },
+          "callouts": [
+            {
+              "line": "Ada picked this up 2026-10-16T10:00:03-05:00",
+              "note": "The desk's claim."
+            },
+            {
+              "line": "🛠 Workshop job 2026-10-16T10:00:20-05:00: draft PR in acme/docs -- a secret-rotation runbook page",
+              "note": "The job line queues the work; the dispatch only points at it."
+            },
+            {
+              "line": "🛠 Workshop picked this up 2026-10-16T10:01:40-05:00 -- https://claude.ai/code/session_01...",
+              "note": "The Workshop's claim, with a link to its session."
+            },
+            {
+              "line": "✓? Ada 2026-10-16T10:48:12-05:00: draft PR ready -- acme/docs#1234",
+              "note": "The result. Alex's tick confirms it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Keeping it honest",
+      "blurb": "What holds up over weeks: a clock on Ada's guesses, append-only writes, fixtures, and where each rule lives.",
+      "wrap": {
+        "takeaways": [
+          "An unticked `✓?` comes off after 14 days.",
+          "Task text is the only memory, so writes append and a failed call writes nothing.",
+          "Change the contract and the script together, then run the fixtures."
+        ],
+        "check": {
+          "q": "Ada marks a task `✓?` on October 1 and Alex never ticks it. When is the earliest Ada can mark it again?",
+          "a": "November 14. The mark comes off on October 15, and that cleared line starts a 30-day quiet."
+        }
+      },
+      "steps": [
+        {
+          "title": "An unticked ✓? comes off after 14 days",
+          "file": "ada-desk/skills/desk/scripts/desk.mjs",
+          "from": "// The ✓? clock (conventions.md, Kind 3). Tick = done; unticked = nothing,",
+          "to": "return !(last && now - ms(last) < CHECK_QUIET_DAYS * DAY_MS);",
+          "focus": [
+            "if (start && now - ms(start) >= CHECK_REVERT_DAYS * DAY_MS) {",
+            "return !(last && now - ms(last) < CHECK_QUIET_DAYS * DAY_MS);"
+          ],
+          "text": [
+            "A wrong `✓?` can't hide an open task for long: unticked, the mark comes off after 14 days.",
+            "Clearing it writes a `✓?` line too, and that starts a 30-day quiet before the task can be marked again."
+          ],
+          "visual": {
+            "kind": "timeline",
+            "caption": "Unticked, a `✓?` lasts two weeks. Then the task can't be re-marked for 30 days.",
+            "unit": "day",
+            "points": [
+              {
+                "at": 0,
+                "label": "Ada marks it `✓?`"
+              },
+              {
+                "at": 14,
+                "label": "still unticked: the mark comes off",
+                "sub": "`revert`"
+              },
+              {
+                "at": 44,
+                "label": "the earliest it can be marked again"
+              }
+            ]
+          }
+        },
+        {
+          "title": "The task text is the only memory",
+          "file": "ada-desk/skills/desk/SKILL.md",
+          "from": "### How the desk writes",
+          "to": "next run (every action is safe to retry); never write `Refused` or `Done` for a call that failed.",
+          "focus": [
+            "- **Append, never rewrite.** New lines go at the end of the body, after a newline; existing text",
+            "- **A failed write is not a refusal.** A transient Graph error leaves the task untouched for the"
+          ],
+          "text": [
+            "The desk has no state file, so task text is its only memory and every write appends.",
+            "That's why earlier steps could read a body as history: claim, then job line, then pickup. A failed Graph call writes nothing, because a `Refused` or `Done` line would close the tick for good."
+          ]
+        },
+        {
+          "title": "Fixtures pin the script's verdicts",
+          "file": "ada-desk/skills/desk/scripts/desk-fixtures.mjs",
+          "from": "#!/usr/bin/env node",
+          "to": "// relative to it.",
+          "focus": [
+            "//                                     current output -- then read the git diff:",
+            "//                                     a changed verdict is a contract change"
+          ],
+          "text": [
+            "Fixtures pin what the scripts return for sample tasks: each case is a task file and its expected output.",
+            "Not every refusal has one: nothing covers the parser errors or the title check, and CI never runs them. So run `node desk-fixtures.mjs` before changing a rule, add a case, then `--update` and read the diff."
+          ]
+        },
+        {
+          "title": "Every rule has one home",
+          "text": [
+            "Before changing a rule, find its home: the contract, the script, or a skill.",
+            "Change `conventions.md` and the script together, run the fixtures, then bump the version in `plugin.json`, which CI tags releases from."
+          ],
+          "visual": {
+            "kind": "table",
+            "caption": "Each kind of rule has one home. Only the script's verdicts have tests.",
+            "columns": [
+              "Rule",
+              "Lives in",
+              "Checked by"
+            ],
+            "rows": [
+              [
+                "Block grammar, the action set, line formats, the clocks",
+                "`conventions.md`, which producers in other plugins stage against",
+                "`desk.mjs` must match it: fix both"
+              ],
+              [
+                "What a task means",
+                "`desk.mjs`: `classify`, `workorder`, `sweep`",
+                "the fixtures"
+              ],
+              [
+                "What the desk does per verdict, the tier rungs, the live target checks",
+                "the desk's `SKILL.md`",
+                "review only"
+              ],
+              [
+                "What the Workshop may build, and where",
+                "the Workshop's `SKILL.md`",
+                "review only"
+              ],
+              [
+                "The release",
+                "`plugin.json`'s version",
+                "CI tags a release from it"
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

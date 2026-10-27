@@ -3,12 +3,17 @@
   "owner": {
     "name": "Cam Soper"
   },
-  "description": "Executive-function support patterns for ADHD brains: morning brief, shutdown ritual, rescue command, capture inbox, follow-up triage, and a monthly retro.",
+  "description": "Executive-function support patterns for ADHD brains, plus a code-walkthrough plugin built on the same principles.",
   "plugins": [
     {
       "name": "adhd-ops",
       "source": "./adhd-ops",
       "description": "The full loop: a delta-first morning brief with One Big Thing and the 3-strike rule, an end-of-day shutdown email that celebrates wins and parks open loops with next steps, the /gsd rescue command with a once-a-day scheduled poke, the /park zero-ceremony capture inbox, weekly follow-up triage that re-verifies every task's claims against live state, and a monthly retro that reads the system's own telemetry and proposes exactly one tuning change. Ships as a template -- fill in the workspace-config skill with your own calendars, task list, state store, and voice."
+    },
+    {
+      "name": "code-walkthrough",
+      "source": "./code-walkthrough",
+      "description": "Interactive, step-by-step walkthroughs of code, published as a page: story on the left, the exact code on the right (pinned to a commit, every line number linked to GitHub), diagrams where a picture beats prose, and a check-yourself question per chapter. Starts with a critical-path analysis so nothing is explained before what it depends on, and ends with a teaching and ADHD-friendliness review. A zero-dependency script resolves every snippet from git by its exact text, so line numbers and code can't be invented."
     }
   ]
 }

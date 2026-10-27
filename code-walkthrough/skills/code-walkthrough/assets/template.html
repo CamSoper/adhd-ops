@@ -1,0 +1,529 @@
+<title>__TOUR_TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a step-through. Story on the left, the thing to look at (code sized to its widest line, or a diagram) on the right; a To Do-style checklist tracks progress. */
+:root {
+  --bg: #eef1f5;
+  --surface: #ffffff;
+  --ink: #17212c;
+  --muted: #586676;
+  --line: #d6dde6;
+  --accent: #1d5fc7;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3ecfb;
+  --hand: #a65a06;
+  --focus-bg: #fff2d6;
+  --focus-edge: #e39a2d;
+  --code-bg: #fbfcfd;
+  --code-ink: #1d2733;
+  --syn-kw: #b0306a;
+  --syn-str: #187a4d;
+  --syn-com: #6a7787;
+  --syn-num: #985800;
+  --syn-fn: #1d5fc7;
+  --syn-attr: #0b6a86;
+  --syn-head: #17212c;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --code-size: 13.5px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1218; --surface: #141b23; --ink: #e3e9f0; --muted: #94a2b2; --line: #26313d;
+    --accent: #79aefc; --accent-ink: #0b1422; --accent-soft: #1a2a42; --hand: #f2a950;
+    --focus-bg: #2f2514; --focus-edge: #e39a2d; --code-bg: #10161d; --code-ink: #dbe3ec;
+    --syn-kw: #ff86bd; --syn-str: #74d49f; --syn-com: #7f8d9c; --syn-num: #f4b66b;
+    --syn-fn: #8fbaff; --syn-attr: #6fd0ea; --syn-head: #f0f4f8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1218; --surface: #141b23; --ink: #e3e9f0; --muted: #94a2b2; --line: #26313d;
+  --accent: #79aefc; --accent-ink: #0b1422; --accent-soft: #1a2a42; --hand: #f2a950;
+  --focus-bg: #2f2514; --focus-edge: #e39a2d; --code-bg: #10161d; --code-ink: #dbe3ec;
+  --syn-kw: #ff86bd; --syn-str: #74d49f; --syn-com: #7f8d9c; --syn-num: #f4b66b;
+  --syn-fn: #8fbaff; --syn-attr: #6fd0ea; --syn-head: #f0f4f8;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--accent-soft); padding: 0.05em 0.35em; border-radius: 5px; overflow-wrap: anywhere; }
+.page {
+  max-width: 1760px; margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (min-width: 720px) {
+  .page { padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); }
+}
+.eyebrow { font: 600 12.5px/1.3 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(34px, 5vw, 56px); font-weight: 800; line-height: 1.02; }
+h2 { font-size: clamp(26px, 3vw, 34px); font-weight: 800; line-height: 1.1; }
+h3 { font-size: 21px; font-weight: 600; line-height: 1.2; }
+p { margin: 0; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0;
+  font: 700 15px/1 var(--f-body); color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  padding: 11px 18px; cursor: pointer; text-decoration: none;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn[disabled] { opacity: 0.4; cursor: default; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font: 13.5px/1.3 var(--f-mono); color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; background: var(--surface);
+}
+.chip a, .chip b { color: var(--ink); font-weight: 600; text-decoration: none; }
+.chip a:hover { color: var(--accent); }
+
+/* To Do-style tick circles: empty = not opened yet, filled = opened, ring = you are here */
+.tick { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted); display: inline-grid; place-items: center; margin-top: 2px; }
+.tick svg { width: 12px; height: 12px; visibility: hidden; }
+.is-seen .tick { background: var(--accent); border-color: var(--accent); }
+.is-seen .tick svg { visibility: visible; }
+.is-here .tick { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+/* ---------- overview ---------- */
+.ov { display: grid; gap: 36px; }
+.ov-head { display: grid; gap: 16px; max-width: 72ch; }
+.ov-head .summary { display: grid; gap: 10px; font-size: 18px; }
+.goal { border-left: 4px solid var(--focus-edge); background: var(--surface); padding: 12px 16px; border-radius: 0 12px 12px 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 10px; }
+.chapters { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+.ch { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 14px; align-content: start; }
+.ch p.blurb { color: var(--muted); font-size: 15.5px; }
+.checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.checklist li a { display: flex; gap: 12px; align-items: flex-start; padding: 8px; margin: 0 -8px; border-radius: 10px; color: var(--ink); text-decoration: none; font-size: 15.5px; line-height: 1.35; }
+.checklist li a:hover { background: var(--accent-soft); }
+.checklist .where { display: block; font: 12.5px/1.4 var(--f-mono); color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+.checklist .is-here a { background: var(--accent-soft); font-weight: 700; }
+.glossary { display: grid; gap: 10px 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin: 0; }
+.glossary div { display: grid; gap: 2px; }
+.glossary dt { font-weight: 700; }
+.glossary dd { margin: 0; color: var(--muted); font-size: 15.5px; }
+.how { color: var(--muted); font-size: 14.5px; max-width: 78ch; border-top: 1px solid var(--line); padding-top: 18px; }
+
+/* ---------- step view ---------- */
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 22px; }
+.topbar .spacer { flex: 1; }
+.progress { font: 13.5px/1 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.stepview { display: grid; gap: 28px; grid-template-columns: minmax(340px, 1fr) minmax(0, var(--codew, 62%)); align-items: start; }
+@media (max-width: 960px) { .stepview { grid-template-columns: minmax(0, 1fr); } }
+.story { display: grid; gap: 18px; min-width: 0; }
+/* Sticky only when it fits: a taller story would hide its own bottom until the code ran out. */
+@media (min-width: 961px) { .story.stick { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); } }
+.story .prose { display: grid; gap: 12px; font-size: 17.5px; max-width: 62ch; }
+.nav { display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
+.inchapter { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 8px; }
+.keys { font: 12.5px/1.4 var(--f-mono); color: var(--muted); }
+.keys kbd { font: inherit; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface); }
+details.terms summary { cursor: pointer; font-weight: 700; font-size: 15px; }
+details.terms .glossary { margin-top: 10px; grid-template-columns: 1fr; }
+.wrapup { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; gap: 10px; }
+.wrapup ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.wrapup details { border-top: 1px solid var(--line); padding-top: 10px; }
+.wrapup summary { cursor: pointer; font-weight: 700; }
+.wrapup details p { margin-top: 8px; }
+
+.pane { background: var(--code-bg); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; min-width: 0; }
+.filebar { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.filebar .path { font: 13.5px/1.4 var(--f-mono); color: var(--muted); overflow-wrap: anywhere; min-width: 0; }
+.filebar .path b { color: var(--ink); font-weight: 600; }
+.filebar .range { color: var(--hand); font-weight: 600; font-variant-numeric: tabular-nums; }
+.filebar a { font: 600 13.5px/1.4 var(--f-body); white-space: nowrap; }
+.code { padding: 10px 0; font: var(--code-size)/1.62 var(--f-mono); color: var(--code-ink); tab-size: 4; }
+.row { display: grid; grid-template-columns: 4.2em minmax(0, 1fr); border-left: 3px solid transparent; }
+.has-callouts .row { grid-template-columns: 4.2em 1.9em minmax(0, 1fr); }
+.row .ln { text-align: right; padding-right: 14px; color: var(--muted); text-decoration: none; font-variant-numeric: tabular-nums; user-select: none; opacity: 0.75; }
+a.ln:hover { color: var(--accent); opacity: 1; text-decoration: underline; }
+.row .src { white-space: pre-wrap; overflow-wrap: anywhere; padding-right: 16px; padding-left: 1.4em; text-indent: -1.4em; }
+.has-focus .row:not(.is-focus) .src { opacity: 0.58; }
+.has-focus .row:not(.is-focus):hover .src { opacity: 1; }
+.row.is-focus { background: var(--focus-bg); border-left-color: var(--focus-edge); }
+.row.is-focus .ln { color: var(--hand); opacity: 1; font-weight: 600; }
+.badge { display: inline-grid; place-items: center; width: 1.45em; height: 1.45em; border-radius: 50%; background: var(--hand); color: var(--surface); font: 700 11.5px/1 var(--f-body); }
+.row .co { display: flex; align-items: flex-start; padding-top: 0.12em; }
+.legend { list-style: none; margin: 0; padding: 12px 16px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: 15px; background: var(--surface); }
+.legend li { display: flex; gap: 10px; align-items: flex-start; }
+.legend .badge { margin-top: 2px; flex: none; }
+.codefoot { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--muted); }
+.after { margin-top: 18px; display: flex; justify-content: flex-end; min-width: 0; }
+.pane.visual { background: var(--surface); padding: 20px; }
+
+/* ---------- visuals ---------- */
+.viz { container-type: inline-size; margin: 0; display: grid; gap: 14px; min-width: 0; }
+.viz figcaption { font-size: 15.5px; }
+.viz figcaption .eyebrow { display: block; margin-bottom: 4px; color: var(--hand); }
+.story .viz { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.ov .viz { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+.node { background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.node > b { font-family: var(--f-display); font-size: 17px; line-height: 1.2; }
+.node > span { color: var(--muted); font-size: 14.5px; line-height: 1.4; }
+.chain { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.chain > .node { flex: 1 1 0; }
+.chain .link { align-self: center; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); font-size: 13.5px; text-align: center; line-height: 1.3; }
+.chain .link::before { content: "↓"; font: 18px/1 var(--f-mono); }
+.chain .link span { max-width: 22ch; }
+.exits { list-style: none; margin: 6px 0 0; padding: 6px 0 0; border-top: 1px dashed var(--line); display: grid; gap: 3px; font-size: 13.5px; color: var(--muted); }
+.loop { color: var(--muted); font-size: 14.5px; }
+@container (min-width: 640px) {
+  .chain { flex-direction: row; align-items: stretch; }
+  .chain .link { flex: 0 0 auto; max-width: 13ch; }
+  .chain .link::before { content: "→"; }
+}
+.ladder { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ladder li { display: grid; grid-template-columns: 1.9em minmax(0, 1fr); gap: 4px 10px; align-items: start; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.ladder .then { grid-column: 2; color: var(--muted); font-size: 15px; }
+.ladder .then::before { content: "→ "; color: var(--hand); font-weight: 700; }
+.ladder li.else { display: block; border-style: dashed; color: var(--muted); }
+@container (min-width: 560px) {
+  .ladder li { grid-template-columns: 1.9em minmax(0, 1.2fr) minmax(0, 1fr); }
+  .ladder .then { grid-column: 3; }
+}
+.tl { list-style: none; margin: 0; padding: 0 0 0 14px; display: grid; gap: 14px; border-left: 2px solid var(--line); }
+.tl li { position: relative; display: grid; gap: 2px; padding-left: 12px; min-width: 0; }
+.tl li::before { content: ""; position: absolute; left: -22px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 3px solid var(--hand); }
+.tl .at { font: 600 12.5px/1.3 var(--f-mono); color: var(--hand); letter-spacing: 0.04em; text-transform: uppercase; }
+.tl b { font-size: 15.5px; }
+.tl li > span:last-child { color: var(--muted); font-size: 14.5px; }
+@container (min-width: 560px) {
+  .tl { display: flex; padding: 18px 0 0; border-left: 0; border-top: 2px solid var(--line); gap: 0; }
+  .tl li { flex: var(--grow) 1 0; min-width: 120px; padding: 0 14px 0 0; }
+  .tl li:last-child { flex: 0 0 auto; max-width: 200px; }
+  .tl li::before { left: 0; top: -26px; }
+}
+.seq-scroll { overflow-x: auto; }
+.seq { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(120px, 1fr)); row-gap: 10px; min-width: calc(var(--n) * 128px); padding-bottom: 8px; }
+.seq-life { position: absolute; top: 30px; bottom: 0; width: 0; left: calc((var(--i) + 0.5) / var(--n) * 100%); border-left: 2px dashed var(--line); }
+.seq-actor { position: relative; text-align: center; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; margin: 0 6px 6px; font: 700 15px/1.25 var(--f-display); }
+.seq-msg { position: relative; margin-left: calc(50% / var(--k)); margin-right: calc(50% / var(--k)); text-align: center; }
+.seq-msg .lbl { display: inline-block; font-size: 14px; line-height: 1.3; background: var(--surface); padding: 0 6px; max-width: 100%; }
+.seq-msg .lbl i { font-style: normal; color: var(--hand); font-weight: 700; margin-right: 4px; }
+.seq-msg .bar { display: block; height: 2px; background: var(--ink); position: relative; margin-top: 3px; }
+.seq-msg .bar::after { content: ""; position: absolute; top: -5px; border: 6px solid transparent; }
+.seq-msg[data-dir="r"] .bar::after { right: -2px; border-left-color: var(--ink); border-right: 0; }
+.seq-msg[data-dir="l"] .bar::after { left: -2px; border-right-color: var(--ink); border-left: 0; }
+.seq-self { position: relative; justify-self: center; text-align: center; font-size: 14px; line-height: 1.3; background: var(--surface); border: 1px dashed var(--muted); border-radius: 8px; padding: 4px 8px; margin: 0 6px; }
+.seq-self i { font-style: normal; color: var(--hand); font-weight: 700; margin-right: 4px; }
+.tbl { overflow-x: auto; }
+.tbl table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tbl th, .tbl td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.tbl th { font: 600 12.5px/1.3 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+/* highlight.js tokens, on the theme's palette */
+.hljs-keyword, .hljs-selector-tag { color: var(--syn-kw); }
+.hljs-string, .hljs-regexp, .hljs-template-string, .hljs-code { color: var(--syn-str); }
+.hljs-comment, .hljs-quote, .hljs-meta { color: var(--syn-com); font-style: italic; }
+.hljs-number, .hljs-literal, .hljs-symbol, .hljs-bullet { color: var(--syn-num); }
+.hljs-title, .hljs-title.function_, .hljs-title.class_ { color: var(--syn-fn); }
+.hljs-attr, .hljs-property, .hljs-built_in, .hljs-variable.language_, .hljs-params { color: var(--syn-attr); }
+.hljs-section { color: var(--syn-head); font-weight: 600; }
+.hljs-strong { font-weight: 600; }
+.hljs-emphasis { font-style: italic; }
+.hljs-link { color: var(--syn-fn); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .checklist li a { transition: background-color 120ms, border-color 120ms; }
+}
+</style>
+
+<div class="page" id="app"></div>
+
+<script type="application/json" id="tour-data">/*__TOUR_DATA__*/</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById("tour-data").textContent);
+  const app = document.getElementById("app");
+  const short = D.sha.slice(0, 7);
+  const when = new Date(D.committed).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  const scopeLabel = (D.scope || []).join(", ");
+  const TICK = '<span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 6.3l2.3 2.3 4.7-5" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+
+  const FLAT = [];
+  D.chapters.forEach((ch, c) => ch.steps.forEach((st, s) => FLAT.push({ c, s, ch, st, id: `step-${c + 1}-${s + 1}` })));
+  const total = FLAT.length;
+
+  // Opened steps are a per-viewer convenience: lose them and the page still works.
+  const KEY = `walkthrough:seen:${D.sha}:${D.title}`;
+  let seen = new Set();
+  try { seen = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) {}
+  function markSeen(id) {
+    seen.add(id);
+    try { localStorage.setItem(KEY, JSON.stringify([...seen])); } catch (e) {}
+  }
+
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  const inline = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  const ext = (url, body, cls) => url ? `<a${cls ? ` class="${cls}"` : ""} href="${esc(url)}" target="_blank" rel="noopener">${body}</a>` : `<span${cls ? ` class="${cls}"` : ""}>${body}</span>`;
+
+  function highlight(code, lang) {
+    try {
+      if (window.hljs && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
+    } catch (e) {}
+    return esc(code);
+  }
+  // Split highlighted HTML into lines, closing and reopening spans that cross a newline.
+  function splitLines(html) {
+    const out = [], stack = [];
+    let cur = "", last = 0, m;
+    const re = /(<span[^>]*>|<\/span>|\n)/g;
+    while ((m = re.exec(html))) {
+      cur += html.slice(last, m.index);
+      last = re.lastIndex;
+      if (m[0] === "\n") { cur += "</span>".repeat(stack.length); out.push(cur); cur = stack.join(""); }
+      else if (m[0] === "</span>") { stack.pop(); cur += m[0]; }
+      else { stack.push(m[0]); cur += m[0]; }
+    }
+    out.push(cur + html.slice(last));
+    return out;
+  }
+
+  // The code pane is as wide as the snippet's widest line (capped by the build), so
+  // prose-like lines stop wrapping a word or two short. Measured, not guessed: the
+  // mono face's advance width differs from its fallbacks.
+  let charW = 8.1;
+  function measure() {
+    const probe = document.createElement("div");
+    probe.className = "code";
+    probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre;padding:0";
+    probe.textContent = "0".repeat(100);
+    document.body.appendChild(probe);
+    charW = probe.getBoundingClientRect().width / 100 || charW;
+    probe.remove();
+  }
+  function codeWidth(st) {
+    const fs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--code-size")) || 13.5;
+    const gutter = (st.callouts && st.callouts.length ? 6.1 : 4.2) * fs;
+    return Math.ceil(st.cols * charW + gutter + 1.4 * fs + 16 + 8);
+  }
+
+  // ---------- visuals ----------
+  function figure(v, body) {
+    return `<figure class="viz viz-${esc(v.kind)}"><figcaption><span class="eyebrow">Look for</span>${inline(v.caption)}</figcaption>${body}</figure>`;
+  }
+  const VIS = {
+    flow(v) {
+      const parts = v.nodes.map((n, i) =>
+        `${i ? '<li class="link" aria-hidden="true"></li>' : ""}<li class="node"><b>${inline(n.label)}</b>${n.sub ? `<span>${inline(n.sub)}</span>` : ""}</li>`).join("");
+      return `<ol class="chain">${parts}</ol>${v.loop ? `<p class="loop">↺ ${inline(v.loop)}</p>` : ""}`;
+    },
+    states(v) {
+      const exits = (label) => {
+        const xs = (v.exits || []).filter((x) => x.from === label);
+        return xs.length ? `<ul class="exits">${xs.map((x) => `<li>↳ ${inline(x.label)} → <b>${inline(x.to)}</b></li>`).join("")}</ul>` : "";
+      };
+      const parts = v.states.map((s, i) =>
+        `${i ? `<li class="link"><span>${inline(v.edges[i - 1])}</span></li>` : ""}<li class="node"><b>${inline(s.label)}</b>${s.sub ? `<span>${inline(s.sub)}</span>` : ""}${exits(s.label)}</li>`).join("");
+      return `<ol class="chain">${parts}</ol>`;
+    },
+    timeline(v) {
+      const pts = v.points;
+      const span = (pts[pts.length - 1].at - pts[0].at) || 1;
+      return `<ol class="tl">${pts.map((p, i) => {
+        const grow = i < pts.length - 1 ? Math.max(0.6, ((pts[i + 1].at - p.at) / span) * 10) : 0;
+        return `<li style="--grow:${grow.toFixed(2)}"><span class="at">${esc(v.unit)} ${esc(p.at)}</span><b>${inline(p.label)}</b>${p.sub ? `<span>${inline(p.sub)}</span>` : ""}</li>`;
+      }).join("")}</ol>`;
+    },
+    ladder(v) {
+      return `<ol class="ladder">${v.rungs.map((r, i) =>
+        `<li><span class="badge">${i + 1}</span><span>${inline(r.test)}</span><span class="then">${inline(r.then)}</span></li>`).join("")}${v.otherwise ? `<li class="else">Otherwise → ${inline(v.otherwise)}</li>` : ""}</ol>`;
+    },
+    table(v) {
+      return `<div class="tbl"><table><thead><tr>${v.columns.map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${v.rows.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    },
+    sequence(v) {
+      const n = v.actors.length, col = (a) => v.actors.indexOf(a);
+      let html = v.actors.map((a, i) => `<div class="seq-life" style="--i:${i}"></div>`).join("");
+      html += v.actors.map((a, i) => `<div class="seq-actor" style="grid-column:${i + 1};grid-row:1">${inline(a)}</div>`).join("");
+      v.messages.forEach((m, k) => {
+        const a = col(m.from), b = col(m.to), row = k + 2, num = `<i>${k + 1}</i>`;
+        if (a === b) {
+          html += `<div class="seq-self" style="grid-column:${a + 1};grid-row:${row}">${num}${inline(m.label)}</div>`;
+        } else {
+          const lo = Math.min(a, b), hi = Math.max(a, b);
+          html += `<div class="seq-msg" data-dir="${b > a ? "r" : "l"}" style="grid-column:${lo + 1} / ${hi + 2};grid-row:${row};--k:${hi - lo + 1}"><span class="lbl">${num}${inline(m.label)}</span><span class="bar"></span></div>`;
+        }
+      });
+      return `<div class="seq-scroll"><div class="seq" style="--n:${n}" role="img" aria-label="${esc(v.caption)}">${html}</div></div>`;
+    },
+  };
+  const visual = (v) => (v && VIS[v.kind] ? figure(v, VIS[v.kind](v)) : "");
+
+  // ---------- pieces ----------
+  function pathHtml(p) {
+    const i = p.lastIndexOf("/");
+    return `${esc(p.slice(0, i + 1))}<b>${esc(p.slice(i + 1))}</b>`;
+  }
+  function where(st) {
+    if (st.concept) return "the big picture";
+    const scope = (D.scope || []).length === 1 ? D.scope[0].replace(/\/?$/, "/") : "";
+    return `${esc(scope && st.file.startsWith(scope) ? st.file.slice(scope.length) : st.file)}:${st.start}–${st.end}`;
+  }
+  function checklist(ch, c, hereId) {
+    return `<ul class="checklist">${ch.steps.map((st, s) => {
+      const id = `step-${c + 1}-${s + 1}`;
+      const cls = [seen.has(id) ? "is-seen" : "", id === hereId ? "is-here" : ""].join(" ").trim();
+      return `<li class="${cls}"><a href="#${id}" data-go="${id}">${TICK}<span>${esc(st.title)}<span class="where">${where(st)}</span></span></a></li>`;
+    }).join("")}</ul>`;
+  }
+  function glossary(cls) {
+    if (!D.glossary || !D.glossary.length) return "";
+    return `<dl class="glossary ${cls || ""}">${D.glossary.map((g) => `<div><dt>${inline(g.term)}</dt><dd>${inline(g.means)}</dd></div>`).join("")}</dl>`;
+  }
+
+  function renderOverview() {
+    document.title = D.title;
+    const chapters = D.chapters.map((ch, c) => `
+      <section class="ch" aria-labelledby="ch${c}">
+        <div class="eyebrow">Chapter ${c + 1} · ${ch.steps.length} steps · about ${ch.minutes} min</div>
+        <h3 id="ch${c}">${esc(ch.title)}</h3>
+        <p class="blurb">${inline(ch.blurb)}</p>
+        ${checklist(ch, c, null)}
+        <div><a class="btn" href="#step-${c + 1}-1" data-go="step-${c + 1}-1">Start chapter ${c + 1}</a></div>
+      </section>`).join("");
+    const firstUnseen = FLAT.find((f) => !seen.has(f.id)) || FLAT[0];
+    const allSeen = FLAT.every((f) => seen.has(f.id));
+    app.innerHTML = `
+      <div class="ov">
+        <header class="ov-head">
+          <div class="eyebrow">${esc(D.repo || "walkthrough")}${scopeLabel ? ` · ${esc(scopeLabel)}` : ""}</div>
+          <h1>${esc(D.title)}</h1>
+          <div class="meta">
+            ${D.audience ? `<span class="chip">For <b>${esc(D.audience)}</b></span>` : ""}
+            <span class="chip"><b>${total} steps</b> · about ${D.minutes} min · ${D.chapters.length} chapters</span>
+          </div>
+          <div class="summary">${D.summary.map((p) => `<p>${inline(p)}</p>`).join("")}</div>
+          ${D.goal ? `<p class="goal"><b>By the end</b> ${inline(D.goal)}</p>` : ""}
+          <div class="meta">
+            <span class="chip">Pinned to ${ext(D.commitUrl, short)} · ${esc(when)}</span>
+            ${D.treeUrl ? `<span class="chip">${ext(D.treeUrl, `Browse ${esc(scopeLabel || "the repo")} at this commit ↗`)}</span>` : ""}
+          </div>
+          <div class="nav"><a class="btn primary" href="#${firstUnseen.id}" data-go="${firstUnseen.id}"><span>${allSeen ? "Start again" : seen.size ? "Pick up where you left off" : "Start the walkthrough"}</span> →</a></div>
+        </header>
+        ${visual(D.overview_visual)}
+        <div class="chapters">${chapters}</div>
+        ${D.glossary && D.glossary.length ? `<section aria-labelledby="terms" style="display:grid;gap:14px"><h3 id="terms">Words this walkthrough uses</h3>${glossary()}</section>` : ""}
+        <p class="how">Every snippet and line number here comes from git at ${short}, so the code is exactly what was in the repo at that commit${D.links ? ", and every line number opens that line on GitHub" : ""}. The narration and diagrams are an explanation of it, written for this walkthrough. Ticks mark the steps you've opened, in this browser only.</p>
+      </div>`;
+  }
+
+  function codePane(st) {
+    const lines = splitLines(highlight(st.lines.join("\n"), st.lang));
+    const focus = new Set(st.focus);
+    const marks = new Map((st.callouts || []).map((c, i) => [c.line, i + 1]));
+    const rows = lines.map((h, k) => {
+      const n = st.start + k;
+      const ln = st.fileUrl ? `<a class="ln" href="${esc(st.fileUrl)}#L${n}" target="_blank" rel="noopener" aria-label="Line ${n} on GitHub">${n}</a>` : `<span class="ln">${n}</span>`;
+      const co = marks.size ? `<span class="co">${marks.has(n) ? `<span class="badge" aria-label="Note ${marks.get(n)}">${marks.get(n)}</span>` : ""}</span>` : "";
+      return `<div class="row${focus.has(n) ? " is-focus" : ""}">${ln}${co}<span class="src">${h || " "}</span></div>`;
+    }).join("");
+    const legend = marks.size ? `<ol class="legend">${st.callouts.map((c, i) => `<li><span class="badge">${i + 1}</span><span>${inline(c.note)}</span></li>`).join("")}</ol>` : "";
+    return `
+      <section class="pane" aria-label="Code for this step">
+        <div class="filebar">
+          <span class="path">${pathHtml(st.file)} <span class="range">L${st.start}–${st.end}</span></span>
+          ${st.permalink ? `<a href="${esc(st.permalink)}" target="_blank" rel="noopener">View these lines on GitHub ↗</a>` : ""}
+        </div>
+        <div class="code${focus.size ? " has-focus" : ""}${marks.size ? " has-callouts" : ""}">${rows}</div>
+        ${legend}
+        <div class="codefoot">Copied from git at ${ext(D.commitUrl, short)}. Highlighted lines carry the point of this step${st.fileUrl ? "; every line number opens that line on GitHub" : ""}.</div>
+      </section>`;
+  }
+
+  function wrapup(f) {
+    const w = f.ch.wrap || {};
+    if (f.s !== f.ch.steps.length - 1 || (!w.takeaways && !w.check)) return "";
+    return `
+      <section class="wrapup" aria-label="End of chapter ${f.c + 1}">
+        <div class="eyebrow">End of chapter ${f.c + 1}</div>
+        ${w.takeaways && w.takeaways.length ? `<ul>${w.takeaways.map((t) => `<li>${inline(t)}</li>`).join("")}</ul>` : ""}
+        ${w.check ? `<details><summary>Check yourself: ${inline(w.check.q)}</summary><p>${inline(w.check.a)}</p></details>` : ""}
+      </section>`;
+  }
+
+  function renderStep(i) {
+    const f = FLAT[i], st = f.st;
+    markSeen(f.id);
+    document.title = `${st.title} · ${D.title}`;
+    const prev = FLAT[i - 1], next = FLAT[i + 1];
+    const nextBtn = next
+      ? `<a class="btn primary" href="#${next.id}" data-go="${next.id}"><span>Next: ${esc(next.st.title)}</span> →</a>`
+      : `<a class="btn primary" href="#overview" data-go="overview"><span>Done. Back to the overview</span></a>`;
+    const prevBtn = prev ? `<a class="btn" href="#${prev.id}" data-go="${prev.id}" aria-label="Previous step">←</a>` : `<button class="btn" disabled aria-label="Previous step">←</button>`;
+    const right = st.concept ? `<section class="pane visual">${visual(st.visual)}</section>` : codePane(st);
+    const width = st.concept ? "min(880px, 64%)" : `${codeWidth(st)}px`;
+    app.innerHTML = `
+      <div class="topbar">
+        <a class="btn" href="#overview" data-go="overview">← Overview</a>
+        <span class="eyebrow">Chapter ${f.c + 1} · ${esc(f.ch.title)}</span>
+        <span class="spacer"></span>
+        <span class="progress">Step ${f.s + 1} of ${f.ch.steps.length} · ${i + 1}/${total} overall</span>
+      </div>
+      <div class="stepview" style="--codew:${width}">
+        <article class="story">
+          <h2>${esc(st.title)}</h2>
+          <div class="prose">${st.text.map((p) => `<p>${inline(p)}</p>`).join("")}</div>
+          ${st.concept ? "" : visual(st.visual)}
+          ${wrapup(f)}
+          <div class="nav">${prevBtn}${nextBtn}</div>
+          <div class="inchapter">
+            <div class="eyebrow">In this chapter</div>
+            ${checklist(f.ch, f.c, f.id)}
+            ${D.glossary && D.glossary.length ? `<details class="terms"><summary>Terms</summary>${glossary()}</details>` : ""}
+            <div class="keys"><kbd>←</kbd> <kbd>→</kbd> to move · <kbd>Esc</kbd> for the overview</div>
+          </div>
+        </article>
+        ${right}
+      </div>
+      <div class="after">${nextBtn}</div>`;
+    const story = app.querySelector(".story");
+    if (story && story.offsetHeight < window.innerHeight - 40) story.classList.add("stick");
+  }
+
+  function current() {
+    const h = location.hash.slice(1);
+    return FLAT.findIndex((f) => f.id === h);
+  }
+  function render() {
+    const i = current();
+    if (i >= 0) renderStep(i); else renderOverview();
+  }
+  function go(id) {
+    try { location.hash = id; } catch (e) {}
+    render(); // don't depend on hashchange firing inside the viewer's frame
+    window.scrollTo({ top: 0 });
+  }
+
+  app.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-go]");
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    go(a.dataset.go);
+  });
+  window.addEventListener("hashchange", render);
+  document.addEventListener("keydown", (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    const i = current();
+    if (e.key === "Escape" && i >= 0) go("overview");
+    else if ((e.key === "ArrowRight" || e.key === "j") && i < FLAT.length - 1) go(FLAT[i + 1].id);
+    else if ((e.key === "ArrowLeft" || e.key === "k") && i > 0) go(FLAT[i - 1].id);
+  });
+
+  measure();
+  render();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); if (current() >= 0) render(); });
+})();
+</script>

@@ -1,0 +1,20 @@
+{
+  "name": "code-walkthrough",
+  "version": "0.1.0",
+  "description": "Interactive, step-by-step walkthroughs of code, published as a private page: story on the left, the exact code on the right (pinned to a commit, every line number linked to that line on GitHub), diagrams where a picture beats prose, a To Do-style checklist of steps and a check-yourself question per chapter. It starts with a critical-path analysis -- a map of the code's entry points, hubs and references, then one concrete scenario traced in execution order so nothing is explained before what it depends on -- and ends with a review for teaching effectiveness and ADHD-friendliness: a mechanical pass (lengths, signal, chunking, and an identifier check that fails any backticked name the code doesn't contain) plus an independent reviewer subagent, then one revision before anything ships. The model picks the order and writes the words; a zero-dependency script resolves every snippet from git by its exact text, so line numbers and code can't be invented. Works on a repo, a directory, or a change (a branch or PR).",
+  "author": {
+    "name": "Cam Soper"
+  },
+  "keywords": [
+    "walkthrough",
+    "code-tour",
+    "onboarding",
+    "explain",
+    "documentation",
+    "teaching",
+    "adhd",
+    "diagrams",
+    "artifact",
+    "pull-requests"
+  ]
+}
