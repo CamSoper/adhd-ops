@@ -1,7 +1,7 @@
 {
   "name": "code-walkthrough",
-  "version": "0.2.1",
-  "description": "Interactive, step-by-step walkthroughs of code, published as a private page: story on the left, the exact code on the right (pinned to a commit, every line number linked to that line on GitHub), diagrams where a picture beats prose, a To Do-style checklist of steps and a check-yourself question per chapter. It starts with a critical-path analysis -- a map of the code's entry points, hubs and references, then one concrete scenario traced in execution order so nothing is explained before what it depends on -- and ends with a review for teaching effectiveness and ADHD-friendliness: a mechanical pass (lengths, signal, chunking, and an identifier check that fails any backticked name the code doesn't contain) plus an independent reviewer subagent, then one revision before anything ships. The model picks the order and writes the words; a zero-dependency script resolves every snippet from git by its exact text, so line numbers and code can't be invented. Works on a repo, a directory, or a change (a branch or PR).",
+  "version": "0.3.0",
+  "description": "Interactive, step-by-step walkthroughs of code, published as a private page: story on the left, the exact code on the right (pinned to a commit, every line number linked to that line on GitHub), a map of where the code lives drawn from git, diagrams whose parts light up the lines they stand for, a progress track with minutes left, and a checkpoint after every chapter that asks before it tells -- predictions asked before the narration that answers them, find-the-line checks whose answers the build resolves from git, takeaways after the questions, a missed question coming back two chapters later, never scored and never blocking Next. It starts with a critical-path analysis -- a map of the code's entry points, hubs and references, then one concrete scenario traced in execution order so nothing is explained before what it depends on -- and ends with a review for teaching effectiveness and ADHD-friendliness: a mechanical pass (lengths, title echoes, signal, chunking, peekable checks, and an identifier check that fails any backticked name the code doesn't contain) plus an independent reviewer subagent that answers every check blind, then one revision before anything ships. The model picks the order and writes the words; a zero-dependency script resolves every snippet from git by its exact text, so line numbers, code and answer lines can't be invented, and `drift` says which steps a refresh has to re-read. Works on a repo, a directory or a change (a branch or PR), including unpushed commits and plain folders, which tour as they are without GitHub links.",
   "author": {
     "name": "Cam Soper"
   },
@@ -15,6 +15,8 @@
     "adhd",
     "diagrams",
     "artifact",
-    "pull-requests"
+    "pull-requests",
+    "retrieval-practice",
+    "code-map"
   ]
 }

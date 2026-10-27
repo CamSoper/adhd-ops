@@ -13,7 +13,7 @@
     {
       "name": "code-walkthrough",
       "source": "./code-walkthrough",
-      "description": "Interactive, step-by-step walkthroughs of code, published as a page: story on the left, the exact code on the right (pinned to a commit, every line number linked to GitHub), diagrams where a picture beats prose, and a check-yourself question per chapter. Starts with a critical-path analysis so nothing is explained before what it depends on, and ends with a teaching and ADHD-friendliness review. A zero-dependency script resolves every snippet from git by its exact text, so line numbers and code can't be invented."
+      "description": "Interactive, step-by-step walkthroughs of code, published as a page: story on the left, the exact code on the right (pinned to a commit, every line number linked to GitHub), a map of where the code lives, diagrams whose parts light up the lines they stand for, and a checkpoint after every chapter that asks before it tells: predict what the code does, or tap the line that does it, then see why. Starts with a critical-path analysis so nothing is explained before what it depends on, and ends with a teaching and ADHD-friendliness review, half mechanical and half by an independent reviewer. A zero-dependency script resolves every snippet from git by its exact text, so line numbers, code and answers can't be invented. Works on repos, PRs, unpushed branches and plain folders."
     }
   ]
 }

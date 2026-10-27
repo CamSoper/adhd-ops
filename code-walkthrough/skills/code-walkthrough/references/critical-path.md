@@ -10,7 +10,7 @@ the file order, the directory order, or the order the code was written in. This 
 1. **Purpose before mechanism.** The first step says what problem the code solves, in the code's
    own words if it has them (a README's opening, a header comment).
 2. **One spine.** Follow one concrete scenario end to end, in execution order. A concrete event
-   ("the user ticks a ✋ go task", "a request hits `/api/stacks`") beats an abstraction ("the
+   ("Alex ticks a ✋ go task", "a request hits `/api/stacks`") beats an abstraction ("the
    validation layer"): every later step can point back to it.
 3. **Just-in-time concepts.** Introduce a concept (a data shape, an invariant, a term) in the step
    right before the first step that needs it -- not in a glossary dump up front, not after it's
@@ -48,14 +48,24 @@ the file order, the directory order, or the order the code was written in. This 
    invariants the trace passed through, if they need more than one line each → how to change it
    safely (tests, fixtures, extension points). Then **check the order**: walk it and confirm no step
    leans on a later one.
-7. **Chunk.** Chapters of 4-8 steps (3 is thin; 8 is the hard cap) at natural seams: a hand-off
-   between components, a phase change in the trace, a change of actor. Each chapter gets a one-line
-   promise (its blurb), 1-3 takeaways and a check-yourself question. Target 12-20 steps in all and
+7. **Chunk.** Chapters of 4-6 steps (3 is the floor; 8 is the hard cap) at natural seams: a hand-off
+   between components, a phase change in the trace, a change of actor. Readers lose the thread after
+   about five steps without a break, and every chapter ends at a checkpoint, so shorter chapters buy
+   more breaks. Each chapter gets a one-line promise (its blurb), 1-3 takeaways, and the overview
+   node it happens in (`at`), if the overview is a `flow` or `states`. Target 12-20 steps in all and
    3-8 minutes per chapter.
 8. **Plan the visuals** (`visuals.md`): one big picture for the overview, then one wherever a
-   concept is a sequence, a lifecycle, a branch, a timeline or a comparison.
-9. **Write the cut list:** what's in scope but not on the path, and why. If a reader would expect to
-   see it, say in the summary that the walkthrough skips it.
+   concept is a sequence, a lifecycle, a branch, a timeline or a comparison. On a code step, note
+   which line each item stands for.
+9. **Plan the checks** (`plan-format.md`, "Checks"): per chapter, the end question (what the
+   chapter's spine moment decides: "Alex renamed the task; what happens?"), whether to ask it up
+   front as a guess (only if no earlier chapter taught it), and at most one mid-chapter check on a
+   decision point: a prediction before the narration, or the line that decides it. For the last
+   chapter, a second end question on the goal. Each needs one answer you can point to in the code;
+   if you can't, it's not a question yet.
+10. **Write the cut list:** what's in scope but not on the path, and why. If a reader would expect to
+   see it, say in the summary that the walkthrough skips it, and give the big cut files a code-map
+   note so the map says why they're grey.
 
 ## Change tours (`--base`)
 
@@ -90,7 +100,12 @@ Chapter 1 -- <title>: <promise>
 
 ## Visuals
 - overview: <kind> -- <what it shows>
-- <c.s>: <kind> -- <what it shows>
+- <c.s>: <kind> -- <what it shows> (linked: <which items to which lines>)
+
+## Checks
+- chapter <c> end: <kind> -- <question> -- answer: <the answer, and the code line that proves it>
+- chapter <c> pre: yes | no
+- <c.s>: <kind> -- <question> -- answer: <...>
 
 ## Cut
 - <file or topic> -- <why it's not on the path>
