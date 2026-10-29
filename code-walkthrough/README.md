@@ -73,32 +73,84 @@ Each choice traces to the evidence in `references/review-rubric.md`, "Why these 
 2026-10-24 focus group (an ADHD developer, an instructional designer, an information designer and a
 simplifier) that clicked through the ada-desk walkthrough at desktop and phone widths.
 
-- **Checks commit before they reveal.** Retrieval beats rereading, and a folded answer is easy to
-  open before trying. Choice checks explain every option once picked; a step's choice check is a
-  prediction, asked above the narration that answers it, with the step's highlights held back until
-  you pick; find-the-line checks hide the step's
-  highlights until you tap, and the build resolves the answer to exactly one line of git. A chapter
-  can ask its end question up front as a guess (prequestions help the questioned material most).
-  Nothing is scored, nothing blocks Next: a gate is where an ADHD reader closes the tab. Answers are
+- **Checks commit before they reveal.** Retrieval beats rereading (Rowland 2014), and a folded
+  answer is easy to open before trying; answering in your head works only if you really try (Smith,
+  Roediger & Karpicke 2013). Choice checks explain every option once picked, because explaining why
+  beats giving the answer when the idea has to transfer (Butler, Godbole & Marsh 2013); a step's
+  choice check is a prediction, asked above the narration that answers it, with the step's
+  highlights held back until you pick; find-the-line checks hide the step's highlights until you
+  tap, and the build resolves the answer to exactly one line of git. A chapter can ask its end
+  question up front as a guess (prequestions help the questioned material most; St. Hilaire, Chan &
+  Ahn 2024). Nothing is scored, nothing blocks Next: a gate is where an ADHD reader closes the tab.
+  Retrieval practice works about as well for learners with ADHD (Knouse et al. 2016). Answers are
   stored with their question and the picked choice's or line's text, so a rebuild that changes a
   check forgets the old answer instead of misreading it.
-- **Checkpoints, not walls.** One end-of-chapter question, the takeaways after it (so they don't
+- **Checkpoints, not walls.** One end-of-chapter question (questions between segments roughly halved
+  mind-wandering in a lecture; Szpunar, Khan & Schacter 2013), the takeaways after it (so they don't
   give it away), what's next and "a good place to stop". From chapter 3, a question you missed or
   skipped two or more chapters back comes back as one optional line until you get it right. It all
   moved off the chapter's last step, which used to stack code, a table, the takeaways and the
   question into one tall column.
-- **Always oriented.** The overview resumes at the screen you left, with how much you've opened and
-  how long is left. A segmented track (every step and checkpoint) with minutes left;
-  the overview's big picture as a strip with this chapter's node lit; a file breadcrumb with the
-  function or section the snippet sits in, which opens the code map with the current file marked.
-  The map is drawn from git, so it can't be invented.
+- **Always oriented.** Developers following LLM-generated code tours got lost after about four or
+  five steps (Balfroid et al. 2026). The overview resumes at the screen you left, with how much
+  you've opened and how long is left. A segmented track (every step and checkpoint) with minutes
+  left; the overview's big picture as a strip with this chapter's node lit; a file breadcrumb with
+  the function or section the snippet sits in, which opens the code map with the current file
+  marked. The map is drawn from git, so it can't be invented.
 - **Pictures tied to code.** Ladder rungs, states, timeline points and table rows can name the line
-  they stand for, and light it on hover or tap (contiguity, signaling). Callouts are lettered so
-  they never collide with a ladder's numbers.
+  they stand for, and light it on hover or tap (contiguity, Ginns 2006; signaling, Schneider et al.
+  2018). Callouts are lettered so they never collide with a ladder's numbers.
 - **Small screens read in order:** words, code, picture, check, Next. Code scrolls sideways with its
   line numbers pinned instead of wrapping; a sequence diagram becomes a numbered list, and any
   sequence of four or more messages can be stepped through one at a time.
 - **Terms where you need them:** a glossary term's first use in a step is a tap for its meaning.
+
+### The evidence
+
+The same sources, with effect sizes and caveats, are in `references/review-rubric.md`, "Why these
+items". Almost none of it was tested on adult developers, and none on developers with ADHD, so the
+design is consistent with the evidence, not proven by it.
+
+- **Code tours**
+  - Balfroid, M., Albert, J., Aliti, D., Devroey, X., & Vanderose, B. (2026). How developers
+    experience debugging unfamiliar codebases with code tours generated and evaluated by local
+    LLMs. [arXiv:2607.26987](https://arxiv.org/abs/2607.26987)
+  - Kara, Z. B., et al. (2026). LACY: Simulating expert mentoring for software onboarding with
+    code tours. [arXiv:2603.25391](https://arxiv.org/abs/2603.25391). Expert-curated tours beat
+    AI-only ones on a quiz, 83% to 57%, but with five learners and no significance test: a
+    direction, not an effect size.
+- **Checks and checkpoints**
+  - Rowland, C. A. (2014). The effect of testing versus restudy on retention: A meta-analytic
+    review of the testing effect. *Psychological Bulletin, 140*(6), 1432-1463.
+    [doi:10.1037/a0037559](https://doi.org/10.1037/a0037559)
+  - Butler, A. C., Godbole, N., & Marsh, E. J. (2013). Explanation feedback is better than
+    correct answer feedback for promoting transfer of learning. *Journal of Educational
+    Psychology, 105*(2), 290-298. [doi:10.1037/a0031026](https://doi.org/10.1037/a0031026)
+  - St. Hilaire, K. J., Chan, J. C. K., & Ahn, D. (2024). Guessing as a learning intervention: A
+    meta-analytic review of the prequestion effect. *Psychonomic Bulletin & Review, 31*, 411-441.
+    [doi:10.3758/s13423-023-02353-8](https://doi.org/10.3758/s13423-023-02353-8)
+  - Szpunar, K. K., Khan, N. Y., & Schacter, D. L. (2013). Interpolated memory tests reduce mind
+    wandering and improve learning of online lectures. *PNAS, 110*(16), 6313-6317.
+    [doi:10.1073/pnas.1221764110](https://doi.org/10.1073/pnas.1221764110)
+  - Smith, M. A., Roediger, H. L., & Karpicke, J. D. (2013). Covert retrieval practice benefits
+    retention as much as overt retrieval practice. *Journal of Experimental Psychology:
+    Learning, Memory, and Cognition*.
+- **Pictures**
+  - Ginns, P. (2006). Integrating information: A meta-analysis of the spatial contiguity and
+    temporal contiguity effects. *Learning and Instruction, 16*(6), 511-525.
+    [doi:10.1016/j.learninstruc.2006.10.001](https://doi.org/10.1016/j.learninstruc.2006.10.001)
+  - Schneider, S., Beege, M., Nebel, S., & Rey, G. D. (2018). A meta-analysis of how signaling
+    affects learning with media. *Educational Research Review, 23*, 1-24.
+  - Rey, G. D. (2012). A review of research and a meta-analysis of the seductive detail effect.
+    *Educational Research Review, 7*(3), 216-237. Why visuals have to earn their place.
+    [doi:10.1016/j.edurev.2012.05.003](https://doi.org/10.1016/j.edurev.2012.05.003)
+  - Noetel, M., et al. (2022). Multimedia design for learning: An overview of reviews with
+    meta-meta-analysis. *Review of Educational Research, 92*(3), 413-454. The overview the three
+    above come through. [doi:10.3102/00346543211052329](https://doi.org/10.3102/00346543211052329)
+- **ADHD**
+  - Knouse, L. E., Rawson, K. A., Vaughn, K. E., & Dunlosky, J. (2016). Does testing improve
+    learning for college students with attention-deficit/hyperactivity disorder? *Clinical
+    Psychological Science*. [doi:10.1177/2167702614565175](https://doi.org/10.1177/2167702614565175)
 
 ## Where it fits, and what would kill it
 
